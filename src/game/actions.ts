@@ -370,7 +370,7 @@ function equipItem(state: GameState, instanceId: string): { state: GameState; co
       },
     },
   };
-  return { state: appendLog(nextState, `${definition.name}を装備した。`, 'good'), consumed: true };
+  return { state: appendLog(nextState, `${definition.name}を装備した。`, 'good'), consumed: false };
 }
 
 function unequipItem(state: GameState, slot: 'weapon' | 'armor'): { state: GameState; consumed: boolean } {
@@ -387,7 +387,7 @@ function unequipItem(state: GameState, slot: 'weapon' | 'armor'): { state: GameS
       },
     },
   };
-  return { state: appendLog(nextState, '装備を外した。'), consumed: true };
+  return { state: appendLog(nextState, '装備を外した。'), consumed: false };
 }
 
 function dropItem(state: GameState, instanceId: string): { state: GameState; consumed: boolean } {

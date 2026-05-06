@@ -124,6 +124,7 @@ export interface LogEntry {
   turn: number;
   text: string;
   tone?: 'normal' | 'good' | 'warn' | 'bad';
+  count?: number;
 }
 
 export interface VisualEvent {

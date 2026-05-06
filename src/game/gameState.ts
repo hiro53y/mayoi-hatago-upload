@@ -34,6 +34,21 @@ export function appendLog(
   text: string,
   tone: LogEntry['tone'] = 'normal',
 ): GameState {
+  const lastLog = state.logs[state.logs.length - 1];
+  if (lastLog?.text === text && (lastLog.tone ?? 'normal') === (tone ?? 'normal')) {
+    return {
+      ...state,
+      logs: [
+        ...state.logs.slice(0, -1),
+        {
+          ...lastLog,
+          turn: state.turn,
+          count: (lastLog.count ?? 1) + 1,
+        },
+      ],
+    };
+  }
+
   const nextLogs = [
     ...state.logs,
     {
@@ -41,6 +56,7 @@ export function appendLog(
       turn: state.turn,
       text,
       tone,
+      count: 1,
     },
   ].slice(-LOG_LIMIT);
 

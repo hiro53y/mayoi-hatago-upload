@@ -135,6 +135,7 @@ export default function GameScreen({ state, onCommand, onBackToTitle }: Props) {
                 <li key={log.id} className={`log-${log.tone ?? 'normal'}`}>
                   <span>{log.turn}</span>
                   {log.text}
+                  {(log.count ?? 1) > 1 ? <b className="log-repeat">×{log.count}</b> : null}
                 </li>
               ))}
             </ol>

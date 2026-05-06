@@ -1,4 +1,3 @@
-import { RECENT_LOG_LIMIT } from '../game/constants';
 import type { LogEntry } from '../game/types';
 
 interface Props {
@@ -7,7 +6,7 @@ interface Props {
 }
 
 export default function LogPanel({ logs, onOpen }: Props) {
-  const recent = logs.slice(-RECENT_LOG_LIMIT).reverse();
+  const recent = logs.slice(-4).reverse();
 
   return (
     <section className="log-panel" aria-label="直近ログ">
@@ -21,6 +20,7 @@ export default function LogPanel({ logs, onOpen }: Props) {
         {recent.map((log) => (
           <li key={log.id} className={`log-${log.tone ?? 'normal'}`}>
             {log.text}
+            {(log.count ?? 1) > 1 ? <span className="log-repeat">×{log.count}</span> : null}
           </li>
         ))}
       </ol>
