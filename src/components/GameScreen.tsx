@@ -80,9 +80,11 @@ export default function GameScreen({ state, onCommand, onBackToTitle }: Props) {
 
   return (
     <section className={`game-screen ${state.player.hp <= 8 ? 'danger' : ''} ${state.player.hunger <= 0 ? 'starving' : ''}`}>
-      <StatusBar state={state} />
-      <DungeonView state={state} />
-      <LogPanel logs={state.logs} onOpen={() => setModal('log')} />
+      <div className="playfield">
+        <StatusBar state={state} />
+        <DungeonView state={state} />
+        <LogPanel logs={state.logs} onOpen={() => setModal('log')} />
+      </div>
       <MobileControls
         facing={state.player.facing}
         onCommand={onCommand}

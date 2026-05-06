@@ -6,181 +6,212 @@ interface Props {
   itemCategory?: ItemCategory;
 }
 
-function Shadow() {
-  return <ellipse cx="32" cy="56" rx="19" ry="5" fill="rgba(0,0,0,.35)" />;
+type Pixel = readonly [x: number, y: number, width: number, height: number, color: string];
+
+function Pixels({ data }: { data: readonly Pixel[] }) {
+  return (
+    <>
+      {data.map(([x, y, width, height, color], index) => (
+        <rect key={`${x}-${y}-${width}-${height}-${index}`} x={x} y={y} width={width} height={height} fill={color} />
+      ))}
+    </>
+  );
 }
+
+function PixelSvg({ className, data }: { className: string; data: readonly Pixel[] }) {
+  return (
+    <svg className={`game-sprite ${className}`} viewBox="0 0 32 32" shapeRendering="crispEdges" aria-hidden="true">
+      <rect x="9" y="28" width="14" height="2" fill="rgba(0,0,0,.34)" />
+      <Pixels data={data} />
+    </svg>
+  );
+}
+
+const PLAYER: Pixel[] = [
+  [12, 2, 8, 2, '#5a351b'],
+  [9, 4, 14, 2, '#b8792a'],
+  [6, 6, 20, 2, '#f0c85b'],
+  [8, 8, 16, 2, '#9a5c21'],
+  [11, 9, 10, 2, '#2a1b15'],
+  [12, 11, 8, 5, '#e7b57a'],
+  [13, 13, 2, 1, '#15100e'],
+  [18, 13, 2, 1, '#15100e'],
+  [15, 15, 4, 1, '#7c3322'],
+  [9, 16, 14, 2, '#3a1d17'],
+  [10, 18, 12, 7, '#274c7d'],
+  [13, 18, 2, 7, '#f3e4cc'],
+  [18, 18, 2, 7, '#f3e4cc'],
+  [8, 18, 2, 6, '#e7b57a'],
+  [22, 17, 2, 7, '#e7b57a'],
+  [11, 25, 4, 3, '#101c32'],
+  [18, 25, 4, 3, '#101c32'],
+  [23, 11, 2, 11, '#dfe8ec'],
+  [25, 9, 1, 10, '#f8f9f4'],
+  [22, 21, 4, 2, '#77502b'],
+];
+
+const TANUKI: Pixel[] = [
+  [9, 6, 4, 4, '#4c2418'],
+  [19, 6, 4, 4, '#4c2418'],
+  [7, 9, 18, 3, '#7d3f2e'],
+  [6, 12, 20, 11, '#9a513a'],
+  [8, 23, 16, 4, '#5d2a22'],
+  [10, 14, 4, 2, '#f1c76d'],
+  [18, 14, 4, 2, '#f1c76d'],
+  [11, 15, 2, 2, '#14100f'],
+  [19, 15, 2, 2, '#14100f'],
+  [14, 19, 4, 1, '#2b1712'],
+  [23, 21, 5, 3, '#6d3327'],
+  [26, 18, 2, 4, '#6d3327'],
+];
+
+const KITSUNE: Pixel[] = [
+  [7, 3, 5, 8, '#d98a3d'],
+  [20, 3, 5, 8, '#d98a3d'],
+  [9, 9, 14, 4, '#f0b45b'],
+  [7, 13, 18, 10, '#c96d35'],
+  [10, 23, 12, 4, '#6a2e1f'],
+  [11, 15, 3, 2, '#1d1110'],
+  [19, 15, 3, 2, '#1d1110'],
+  [13, 18, 7, 1, '#fff0bd'],
+  [22, 19, 6, 4, '#d98a3d'],
+  [25, 15, 3, 5, '#fff0bd'],
+];
+
+const ARMOR: Pixel[] = [
+  [10, 4, 12, 3, '#272321'],
+  [8, 7, 16, 3, '#56514b'],
+  [7, 10, 18, 15, '#77716a'],
+  [9, 13, 14, 2, '#2c2927'],
+  [11, 13, 3, 2, '#f2cf69'],
+  [18, 13, 3, 2, '#f2cf69'],
+  [10, 18, 12, 2, '#b5bab8'],
+  [8, 25, 6, 3, '#393634'],
+  [18, 25, 6, 3, '#393634'],
+  [24, 7, 2, 13, '#c8d1d1'],
+  [26, 5, 2, 7, '#eef4f0'],
+];
+
+const ONIBI: Pixel[] = [
+  [15, 2, 3, 5, '#f6d86a'],
+  [12, 6, 9, 6, '#f29a3a'],
+  [10, 11, 13, 11, '#d95535'],
+  [8, 17, 17, 8, '#7f2630'],
+  [12, 15, 8, 8, '#f5d66b'],
+  [14, 19, 4, 4, '#fff0a5'],
+  [12, 17, 2, 2, '#35151a'],
+  [19, 17, 2, 2, '#35151a'],
+];
+
+const KAPPA: Pixel[] = [
+  [10, 6, 12, 3, '#e4c063'],
+  [8, 9, 16, 4, '#3a5e31'],
+  [7, 13, 18, 11, '#71995a'],
+  [10, 24, 12, 4, '#314d2d'],
+  [10, 15, 4, 2, '#f1da91'],
+  [18, 15, 4, 2, '#f1da91'],
+  [11, 16, 2, 2, '#10170f'],
+  [19, 16, 2, 2, '#10170f'],
+  [13, 21, 7, 2, '#263d23'],
+  [5, 17, 3, 5, '#5d804a'],
+  [24, 17, 3, 5, '#5d804a'],
+];
+
+const SHADOW: Pixel[] = [
+  [12, 3, 8, 3, '#20182b'],
+  [9, 6, 14, 4, '#332642'],
+  [7, 10, 18, 14, '#44355a'],
+  [9, 24, 14, 4, '#191320'],
+  [11, 14, 3, 3, '#eee7ff'],
+  [19, 14, 3, 3, '#eee7ff'],
+  [13, 20, 7, 2, '#15101a'],
+  [6, 18, 3, 7, '#2b2138'],
+  [24, 18, 3, 7, '#2b2138'],
+];
+
+const RICE: Pixel[] = [
+  [10, 10, 12, 3, '#7c4b2f'],
+  [8, 13, 16, 8, '#f5eddd'],
+  [10, 21, 12, 4, '#342720'],
+  [12, 14, 2, 2, '#3d2b21'],
+  [17, 13, 2, 2, '#3d2b21'],
+];
+
+const HERB: Pixel[] = [
+  [15, 7, 3, 18, '#355b2c'],
+  [9, 9, 7, 5, '#7fb24d'],
+  [17, 8, 7, 6, '#9ccc61'],
+  [8, 16, 8, 5, '#6f9c42'],
+  [17, 16, 8, 5, '#82b752'],
+  [12, 22, 9, 3, '#dfeec0'],
+];
+
+const ITEM_SWORD: Pixel[] = [
+  [21, 5, 3, 11, '#f0f6f6'],
+  [19, 8, 2, 12, '#9aa7ab'],
+  [13, 18, 9, 3, '#d7a84b'],
+  [10, 20, 4, 4, '#6b3f2b'],
+  [7, 23, 5, 3, '#2d1d16'],
+];
+
+const ITEM_ARMOR: Pixel[] = [
+  [9, 8, 14, 3, '#c4ccd0'],
+  [8, 11, 16, 14, '#5d707c'],
+  [11, 14, 10, 2, '#27363f'],
+  [12, 19, 8, 2, '#b9c5c9'],
+  [10, 25, 4, 2, '#27363f'],
+  [18, 25, 4, 2, '#27363f'],
+];
+
+const BOLT: Pixel[] = [
+  [14, 4, 5, 8, '#fff0a5'],
+  [11, 12, 10, 4, '#f2c35b'],
+  [16, 16, 6, 4, '#d65b35'],
+  [13, 20, 5, 8, '#f2c35b'],
+  [9, 14, 5, 4, '#fff0a5'],
+];
+
+const BELL: Pixel[] = [
+  [14, 6, 4, 3, '#d7a84b'],
+  [10, 9, 12, 12, '#5f7890'],
+  [12, 11, 8, 7, '#efe4d2'],
+  [14, 21, 4, 3, '#d7a84b'],
+  [9, 24, 14, 2, '#1c303f'],
+];
+
+const STAIRS: Pixel[] = [
+  [18, 6, 8, 4, '#c08a49'],
+  [15, 10, 11, 4, '#8b5d32'],
+  [12, 14, 14, 4, '#c08a49'],
+  [9, 18, 17, 4, '#8b5d32'],
+  [6, 22, 20, 4, '#c08a49'],
+  [18, 8, 8, 1, '#f1d389'],
+  [15, 12, 11, 1, '#f1d389'],
+  [12, 16, 14, 1, '#f1d389'],
+  [9, 20, 17, 1, '#f1d389'],
+];
 
 export default function DungeonSprite({ kind, enemyKind, itemCategory }: Props) {
-  if (kind === 'player') {
-    return (
-      <svg className="game-sprite player-sprite" viewBox="0 0 64 64" aria-hidden="true">
-        <Shadow />
-        <path d="M18 24c3-10 10-16 14-16s11 6 14 16" fill="#d5a94f" />
-        <path d="M10 25c8-9 36-9 44 0-5 4-39 4-44 0Z" fill="#e9c86f" stroke="#6d4527" strokeWidth="2" />
-        <path d="M22 28c0-7 5-12 10-12s10 5 10 12v3H22v-3Z" fill="#2b1b15" />
-        <circle cx="32" cy="30" r="8" fill="#f0c9a3" />
-        <path d="M22 38c2-6 18-6 20 0l3 16H19l3-16Z" fill="#29506f" stroke="#142737" strokeWidth="2" />
-        <path d="M28 38v15M36 38v15" stroke="#f2eadf" strokeWidth="2" strokeLinecap="round" />
-        <path d="M20 41 12 51M44 39l9-8" stroke="#d9d3c4" strokeWidth="3" strokeLinecap="round" />
-        <path d="M48 28 59 17" stroke="#f4f0e6" strokeWidth="3" strokeLinecap="round" />
-        <path d="M50 26 60 16" stroke="#7f8d96" strokeWidth="5" strokeLinecap="round" />
-        <circle cx="29" cy="31" r="1.4" fill="#251a16" />
-        <circle cx="36" cy="31" r="1.4" fill="#251a16" />
-        <path d="M28 35c3 2 6 2 9 0" stroke="#6d352a" strokeWidth="1.8" strokeLinecap="round" />
-      </svg>
-    );
-  }
-
-  if (kind === 'stairs') {
-    return (
-      <svg className="game-sprite stairs-sprite" viewBox="0 0 64 64" aria-hidden="true">
-        <Shadow />
-        <path d="M16 45 48 21v8L16 53v-8Z" fill="#8b5d32" />
-        <path d="M18 37 47 15v7L18 44v-7Z" fill="#c08a49" />
-        <path d="M15 47h28M20 39h28M25 31h27M31 23h21" stroke="#f1d389" strokeWidth="3" strokeLinecap="round" />
-      </svg>
-    );
-  }
-
-  if (kind === 'item') {
-    return <ItemSprite category={itemCategory ?? 'support'} />;
-  }
-
-  return <EnemySprite enemyKind={enemyKind ?? 'mayoi-tanuki'} />;
+  if (kind === 'player') return <PixelSvg className="player-sprite pixel-sprite" data={PLAYER} />;
+  if (kind === 'stairs') return <PixelSvg className="stairs-sprite pixel-sprite" data={STAIRS} />;
+  if (kind === 'item') return <PixelSvg className="item-sprite pixel-sprite" data={itemPixels(itemCategory ?? 'support')} />;
+  return <PixelSvg className="enemy-sprite pixel-sprite" data={enemyPixels(enemyKind ?? 'mayoi-tanuki')} />;
 }
 
-function ItemSprite({ category }: { category: ItemCategory }) {
-  if (category === 'food') {
-    return (
-      <svg className="game-sprite item-sprite" viewBox="0 0 64 64" aria-hidden="true">
-        <Shadow />
-        <path d="M18 34c4-12 24-12 28 0 5 16-33 16-28 0Z" fill="#f4ead8" stroke="#7c4b2f" strokeWidth="2" />
-        <path d="M19 39c7 7 19 7 26 0v8c-8 6-18 6-26 0v-8Z" fill="#463627" />
-        <circle cx="29" cy="33" r="2" fill="#503328" />
-      </svg>
-    );
-  }
-  if (category === 'healing') {
-    return (
-      <svg className="game-sprite item-sprite" viewBox="0 0 64 64" aria-hidden="true">
-        <Shadow />
-        <path d="M31 12c8 5 16 15 16 27 0 10-7 17-15 17S17 49 17 39c0-12 8-22 14-27Z" fill="#7ead55" stroke="#304c2a" strokeWidth="3" />
-        <path d="M26 35h12M32 29v12" stroke="#eef6d9" strokeWidth="4" strokeLinecap="round" />
-      </svg>
-    );
-  }
-  if (category === 'weapon') {
-    return (
-      <svg className="game-sprite item-sprite" viewBox="0 0 64 64" aria-hidden="true">
-        <Shadow />
-        <path d="M44 9 52 17 24 45l-8-8L44 9Z" fill="#dbe6e8" stroke="#6f7f86" strokeWidth="2" />
-        <path d="M19 41 12 48l4 4 7-7" fill="#6d3f2b" stroke="#2d1d16" strokeWidth="2" />
-        <path d="M18 36 28 46" stroke="#d7a84b" strokeWidth="4" strokeLinecap="round" />
-      </svg>
-    );
-  }
-  if (category === 'armor') {
-    return (
-      <svg className="game-sprite item-sprite" viewBox="0 0 64 64" aria-hidden="true">
-        <Shadow />
-        <path d="M19 17c7 5 19 5 26 0l5 12c-3 18-10 25-18 29-8-4-15-11-18-29l5-12Z" fill="#586874" stroke="#1d2a33" strokeWidth="3" />
-        <path d="M24 28h16M27 38h10" stroke="#b9c5c9" strokeWidth="3" strokeLinecap="round" />
-      </svg>
-    );
-  }
-  if (category === 'offense') {
-    return (
-      <svg className="game-sprite item-sprite" viewBox="0 0 64 64" aria-hidden="true">
-        <Shadow />
-        <path d="M30 7 50 32H37l7 25-29-32h14L30 7Z" fill="#f2c35b" stroke="#8e3428" strokeWidth="3" />
-        <path d="M29 22 39 32h-7l4 11" stroke="#fff4bf" strokeWidth="3" strokeLinecap="round" />
-      </svg>
-    );
-  }
-  return (
-    <svg className="game-sprite item-sprite" viewBox="0 0 64 64" aria-hidden="true">
-      <Shadow />
-      <circle cx="32" cy="33" r="17" fill="#5f7890" stroke="#1c303f" strokeWidth="3" />
-      <circle cx="32" cy="33" r="8" fill="#efe4d2" />
-      <path d="M32 12v9M32 45v8M11 33h9M44 33h9" stroke="#d7a84b" strokeWidth="3" strokeLinecap="round" />
-    </svg>
-  );
+function enemyPixels(enemyKind: string): Pixel[] {
+  if (enemyKind === 'kusakage-kitsune') return KITSUNE;
+  if (enemyKind === 'tsuchikure-musha' || enemyKind === 'sabi-yoroi') return ARMOR;
+  if (enemyKind === 'akari-onibi') return ONIBI;
+  if (enemyKind === 'harapeko-kappa') return KAPPA;
+  if (enemyKind === 'kage-boshi') return SHADOW;
+  return TANUKI;
 }
 
-function EnemySprite({ enemyKind }: { enemyKind: string }) {
-  if (enemyKind === 'kusakage-kitsune') {
-    return (
-      <svg className="game-sprite enemy-sprite" viewBox="0 0 64 64" aria-hidden="true">
-        <Shadow />
-        <path d="M45 39c8-7 6-19-2-23 2 10-5 14-12 18" fill="#d98a3d" stroke="#5a2d20" strokeWidth="3" />
-        <path d="M19 23 15 9l12 8M45 23l4-14-12 8" fill="#d98a3d" stroke="#5a2d20" strokeWidth="3" />
-        <path d="M18 24c4-10 24-10 28 0 5 13-2 27-14 27S13 37 18 24Z" fill="#c96d35" stroke="#5a2d20" strokeWidth="3" />
-        <path d="M24 30h16" stroke="#f5d286" strokeWidth="4" strokeLinecap="round" />
-        <circle cx="25" cy="30" r="2" fill="#2b1714" />
-        <circle cx="39" cy="30" r="2" fill="#2b1714" />
-        <path d="M29 37c2 2 4 2 6 0" stroke="#2b1714" strokeWidth="2" strokeLinecap="round" />
-      </svg>
-    );
-  }
-  if (enemyKind === 'tsuchikure-musha' || enemyKind === 'sabi-yoroi') {
-    return (
-      <svg className="game-sprite enemy-sprite" viewBox="0 0 64 64" aria-hidden="true">
-        <Shadow />
-        <path d="M18 22h28l5 9-5 21H18l-5-21 5-9Z" fill={enemyKind === 'sabi-yoroi' ? '#6f5147' : '#6c6760'} stroke="#25211f" strokeWidth="3" />
-        <path d="M20 16h24l5 8H15l5-8Z" fill="#34302c" stroke="#151311" strokeWidth="3" />
-        <path d="M22 32h20" stroke="#f1cc72" strokeWidth="4" strokeLinecap="round" />
-        <circle cx="26" cy="32" r="2" fill="#1a100c" />
-        <circle cx="38" cy="32" r="2" fill="#1a100c" />
-        <path d="M49 21 57 14" stroke="#bcc7c9" strokeWidth="4" strokeLinecap="round" />
-      </svg>
-    );
-  }
-  if (enemyKind === 'akari-onibi') {
-    return (
-      <svg className="game-sprite enemy-sprite" viewBox="0 0 64 64" aria-hidden="true">
-        <Shadow />
-        <path d="M33 7c12 12 19 22 13 36-4 9-13 13-22 10-9-4-12-13-8-22 2-5 6-8 7-15 4 6 4 10 3 14 8-7 6-15 7-23Z" fill="#d95f35" stroke="#5e2530" strokeWidth="3" />
-        <path d="M34 24c7 7 8 14 3 20-4 4-10 4-14 0 6-2 7-7 6-13 3 3 4 4 5 6 2-5 0-9 0-13Z" fill="#f5ce69" />
-        <circle cx="28" cy="35" r="2" fill="#4c1c22" />
-        <circle cx="38" cy="35" r="2" fill="#4c1c22" />
-      </svg>
-    );
-  }
-  if (enemyKind === 'harapeko-kappa') {
-    return (
-      <svg className="game-sprite enemy-sprite" viewBox="0 0 64 64" aria-hidden="true">
-        <Shadow />
-        <path d="M17 25c3-12 27-12 30 0 5 18-4 29-15 29S12 43 17 25Z" fill="#6f9658" stroke="#263d23" strokeWidth="3" />
-        <path d="M23 18c5-7 13-7 18 0-4 4-14 4-18 0Z" fill="#e4c063" stroke="#4c3d1f" strokeWidth="2" />
-        <path d="M22 32h20" stroke="#f2d98b" strokeWidth="4" strokeLinecap="round" />
-        <circle cx="26" cy="32" r="2" fill="#152014" />
-        <circle cx="38" cy="32" r="2" fill="#152014" />
-        <path d="M28 43h8" stroke="#263d23" strokeWidth="3" strokeLinecap="round" />
-      </svg>
-    );
-  }
-  if (enemyKind === 'kage-boshi') {
-    return (
-      <svg className="game-sprite enemy-sprite" viewBox="0 0 64 64" aria-hidden="true">
-        <Shadow />
-        <path d="M32 9c13 8 18 18 16 31-2 10-9 15-16 15s-14-5-16-15c-2-13 3-23 16-31Z" fill="#3a304d" stroke="#15101d" strokeWidth="3" />
-        <path d="M22 31c5-5 15-5 20 0" stroke="#9e82d4" strokeWidth="4" strokeLinecap="round" />
-        <circle cx="26" cy="33" r="2" fill="#efe4ff" />
-        <circle cx="38" cy="33" r="2" fill="#efe4ff" />
-        <path d="M21 47c6 4 16 4 22 0" stroke="#17120f" strokeWidth="4" strokeLinecap="round" />
-      </svg>
-    );
-  }
-  return (
-    <svg className="game-sprite enemy-sprite" viewBox="0 0 64 64" aria-hidden="true">
-      <Shadow />
-      <path d="M20 22 14 12l12 4M44 22l6-10-12 4" fill="#9e553a" stroke="#3d2118" strokeWidth="3" />
-      <path d="M16 27c3-13 29-13 32 0 4 17-5 27-16 27S12 44 16 27Z" fill="#8e4235" stroke="#3d2118" strokeWidth="3" />
-      <path d="M22 32h20" stroke="#f1c46b" strokeWidth="5" strokeLinecap="round" />
-      <circle cx="25" cy="32" r="2" fill="#321813" />
-      <circle cx="39" cy="32" r="2" fill="#321813" />
-      <path d="M28 41c2 2 6 2 8 0" stroke="#2d1712" strokeWidth="3" strokeLinecap="round" />
-      <path d="M45 45c8 0 11-7 8-13" fill="none" stroke="#6b3326" strokeWidth="5" strokeLinecap="round" />
-    </svg>
-  );
+function itemPixels(category: ItemCategory): Pixel[] {
+  if (category === 'food') return RICE;
+  if (category === 'healing') return HERB;
+  if (category === 'weapon') return ITEM_SWORD;
+  if (category === 'armor') return ITEM_ARMOR;
+  if (category === 'offense') return BOLT;
+  return BELL;
 }

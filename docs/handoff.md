@@ -11,6 +11,9 @@
 
 - ゲームタイトルを `不思議なダンジョンもどき` に統一。
 - HTMLタイトル、PWA manifest、Service Workerキャッシュ名、localStorageキー、README、仕様メモ、Wrangler設定を更新。
+- ゲーム画面を、上部HUD、青いミニマップ、下部メッセージ枠を持つレトロRPG風レイアウトに変更。
+- 床、壁、階段を角丸タイルではなく、低解像度風の草地/木立/木段テクスチャに変更。
+- 旅人、敵、道具、階段の表示をドット絵風SVGスプライトに差し替え。
 - オリジナル2Dスプライトを追加。
 - 接触攻撃、敵攻撃、被弾のモーションを強化。
 - 攻撃時に `VisualEvent` を発行し、斬撃とヒット表示を確実に出すようにした。
@@ -21,6 +24,7 @@
 - `npm run test`: 成功。
 - `npm run build`: 成功。
 - `dist` の簡易静的配信チェック: `index.html`、manifest、Service Worker、PWAアイコン取得に成功。
+- UI改修後の静的配信チェック: CSSに `playfield`、`mini-map`、`pixel-sprite` が含まれることを確認。
 
 ## 注意点
 

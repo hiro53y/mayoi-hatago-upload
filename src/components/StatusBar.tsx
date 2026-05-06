@@ -28,48 +28,23 @@ export default function StatusBar({ state }: Props) {
 
   return (
     <header className="status-bar">
-      <div className="primary-status">
-        <div>
-          <span>HP</span>
-          <strong>
-            {player.hp}/{player.maxHp}
-          </strong>
+      <div className="hud-main">
+        <span>{state.floor}F</span>
+        <span>Lv {player.level}</span>
+        <span className="hud-meter-block">
+          HP {player.hp}/{player.maxHp}
           <Meter value={player.hp} max={player.maxHp} className="hp-meter" />
-        </div>
-        <div>
-          <span>満腹</span>
-          <strong>
-            {player.hunger}/{player.maxHunger}
-          </strong>
-          <Meter value={player.hunger} max={player.maxHunger} className="hunger-meter" />
-        </div>
+        </span>
+        <span>{player.score.toLocaleString('ja-JP')}G</span>
       </div>
-      <dl className="compact-status">
-        <div>
-          <dt>階</dt>
-          <dd>{state.floor}</dd>
-        </div>
-        <div>
-          <dt>Lv</dt>
-          <dd>{player.level}</dd>
-        </div>
-        <div>
-          <dt>Exp</dt>
-          <dd>
-            {player.exp}/{nextExp}
-          </dd>
-        </div>
-        <div>
-          <dt>攻/防</dt>
-          <dd>
-            {getPlayerAttack(player)}/{getPlayerDefense(player)}
-          </dd>
-        </div>
-        <div>
-          <dt>点</dt>
-          <dd>{player.score.toLocaleString('ja-JP')}</dd>
-        </div>
-      </dl>
+      <div className="hud-sub">
+        <span className="hud-meter-block">
+          満腹度 {player.hunger}/{player.maxHunger}
+          <Meter value={player.hunger} max={player.maxHunger} className="hunger-meter" />
+        </span>
+        <span>Exp {player.exp}/{nextExp}</span>
+        <span>攻/防 {getPlayerAttack(player)}/{getPlayerDefense(player)}</span>
+      </div>
       {player.statusEffects.length > 0 && (
         <div className="status-effects" aria-label="状態異常">
           {player.statusEffects.map((effect) => (

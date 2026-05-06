@@ -732,6 +732,344 @@ dd {
   color: #fff4df !important;
 }
 
+.game-screen {
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 10px;
+  background:
+    radial-gradient(circle at 50% 12%, rgba(86, 108, 74, 0.18), transparent 34%),
+    linear-gradient(180deg, #111512, #060706);
+}
+
+.playfield {
+  position: relative;
+  width: min(100%, 480px);
+  align-self: start;
+  justify-self: center;
+  aspect-ratio: 4 / 3;
+  min-height: 300px;
+  max-height: min(62svh, 520px);
+  overflow: hidden;
+  border: 4px solid #050505;
+  background: #121712;
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.48),
+    inset 0 0 0 2px rgba(255, 255, 255, 0.06);
+  image-rendering: pixelated;
+}
+
+.playfield::after {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  content: "";
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.035) 50%, rgba(0, 0, 0, 0.035) 50%),
+    radial-gradient(circle at 50% 45%, transparent 0 58%, rgba(0, 0, 0, 0.34) 100%);
+  background-size:
+    100% 4px,
+    auto;
+  mix-blend-mode: soft-light;
+}
+
+.playfield .status-bar {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  right: 10px;
+  z-index: 7;
+  display: grid;
+  gap: 3px;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: #f5f0ff;
+  font-family: "Trebuchet MS", "Arial Black", system-ui, sans-serif;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-shadow:
+    2px 0 #101018,
+    -2px 0 #101018,
+    0 2px #101018,
+    0 -2px #101018,
+    2px 2px #101018;
+}
+
+.hud-main,
+.hud-sub {
+  display: grid;
+  align-items: start;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.hud-main {
+  grid-template-columns: auto auto minmax(104px, 1fr) auto;
+  font-size: clamp(1.05rem, 4.8vw, 1.72rem);
+  line-height: 1;
+}
+
+.hud-sub {
+  grid-template-columns: minmax(112px, 1fr) auto auto;
+  font-size: clamp(0.66rem, 2.4vw, 0.86rem);
+  opacity: 0.94;
+}
+
+.hud-meter-block {
+  display: grid;
+  gap: 3px;
+}
+
+.playfield .meter {
+  width: min(100%, 170px);
+  height: 7px;
+  border: 1px solid rgba(18, 16, 22, 0.95);
+  border-radius: 0;
+  background: #111014;
+  box-shadow: 1px 1px 0 rgba(245, 240, 255, 0.5);
+}
+
+.playfield .hp-meter span {
+  background: linear-gradient(90deg, #4df06e 0 72%, #d93141 72% 100%);
+}
+
+.playfield .hunger-meter span {
+  background: #1ccdda;
+}
+
+.playfield .status-effects {
+  gap: 4px;
+  overflow: hidden;
+}
+
+.playfield .status-effects span {
+  padding: 1px 5px;
+  border-radius: 0;
+  background: rgba(22, 18, 30, 0.72);
+  color: #ffe66f;
+  font-size: 0.68rem;
+  text-shadow: 1px 1px #000;
+}
+
+.playfield .dungeon-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border-radius: 0;
+  background:
+    radial-gradient(circle at 18% 72%, rgba(63, 81, 62, 0.45), transparent 16%),
+    radial-gradient(circle at 86% 20%, rgba(84, 118, 75, 0.42), transparent 21%),
+    #161b16;
+  box-shadow: none;
+}
+
+.playfield .dungeon-grid {
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  aspect-ratio: auto;
+  gap: 0;
+  padding: 0;
+}
+
+.playfield .dungeon-tile {
+  overflow: visible;
+  border-radius: 0;
+  box-shadow: none;
+  transition:
+    filter 120ms ease,
+    transform 90ms ease;
+}
+
+.playfield .tile-floor.visible {
+  background:
+    radial-gradient(circle at 18% 22%, rgba(99, 127, 80, 0.65) 0 7%, transparent 8%),
+    radial-gradient(circle at 78% 62%, rgba(44, 59, 38, 0.88) 0 9%, transparent 10%),
+    radial-gradient(circle at 46% 84%, rgba(139, 118, 74, 0.48) 0 5%, transparent 6%),
+    linear-gradient(135deg, #263225 0 25%, #1a241b 25% 50%, #30402b 50% 75%, #20291f 75%);
+  background-size:
+    15px 15px,
+    18px 18px,
+    20px 20px,
+    8px 8px;
+}
+
+.playfield .tile-wall.visible {
+  background:
+    radial-gradient(ellipse at 22% 18%, #8fb26c 0 16%, transparent 17%),
+    radial-gradient(ellipse at 68% 42%, #5e8b50 0 18%, transparent 19%),
+    radial-gradient(ellipse at 36% 75%, #365f3c 0 20%, transparent 21%),
+    linear-gradient(135deg, #142917, #294b2d 55%, #102011);
+  background-size:
+    17px 16px,
+    19px 18px,
+    21px 19px,
+    auto;
+  filter: saturate(1.1) brightness(0.95);
+}
+
+.playfield .tile-stairs.visible {
+  background:
+    linear-gradient(90deg, rgba(73, 47, 27, 0.7) 2px, transparent 2px),
+    linear-gradient(180deg, #98713f 0 28%, #67401f 28% 35%, #a67b43 35% 63%, #5c381e 63% 70%, #8e6637 70%);
+  background-size:
+    8px 100%,
+    100% 16px;
+  animation: stair-glow 1.2s ease-in-out infinite alternate;
+}
+
+.playfield .explored {
+  opacity: 1;
+  filter: brightness(0.48) saturate(0.75);
+}
+
+.playfield .unseen {
+  background: #020303;
+  opacity: 1;
+}
+
+.playfield .player-tile,
+.playfield .enemy-tile,
+.playfield .item-tile {
+  background: inherit !important;
+  color: inherit !important;
+  transform: none;
+}
+
+.playfield .player-tile {
+  box-shadow: inset 0 0 0 2px rgba(110, 190, 255, 0.62);
+}
+
+.playfield .enemy-tile {
+  box-shadow: none;
+}
+
+.playfield .pixel-sprite {
+  width: 132%;
+  height: 132%;
+  transform: translateY(-10%);
+  image-rendering: pixelated;
+  filter:
+    drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.62))
+    drop-shadow(0 0 1px rgba(255, 255, 255, 0.2));
+}
+
+.playfield .enemy-sprite {
+  width: 136%;
+  height: 136%;
+}
+
+.playfield .item-sprite {
+  width: 88%;
+  height: 88%;
+  transform: translateY(4%);
+}
+
+.playfield .stairs-sprite {
+  width: 112%;
+  height: 112%;
+  transform: translateY(-2%);
+}
+
+.mini-map {
+  position: absolute;
+  top: clamp(52px, 14vw, 74px);
+  left: 10px;
+  z-index: 6;
+  display: grid;
+  width: min(28%, 118px);
+  aspect-ratio: 1;
+  padding: 2px;
+  background: rgba(0, 18, 36, 0.14);
+  opacity: 0.92;
+  pointer-events: none;
+}
+
+.mini-cell {
+  min-width: 0;
+  min-height: 0;
+  background: transparent;
+}
+
+.mini-explored {
+  background: rgba(23, 88, 135, 0.5);
+}
+
+.mini-visible {
+  background: rgba(38, 119, 181, 0.78);
+}
+
+.mini-wall {
+  background: transparent;
+}
+
+.mini-stairs {
+  background: #f1cf52;
+}
+
+.mini-item {
+  background: #62d96c;
+}
+
+.mini-enemy {
+  background: #ff5145;
+}
+
+.mini-player {
+  background: #ff2a32;
+  box-shadow: 0 0 0 1px rgba(255, 244, 180, 0.9);
+}
+
+.playfield .log-panel {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 10px;
+  z-index: 8;
+  min-height: clamp(62px, 18vw, 92px);
+  padding: 8px 10px 8px;
+  border: 3px solid rgba(244, 241, 255, 0.95);
+  border-radius: 3px;
+  background: rgba(7, 8, 22, 0.82);
+  box-shadow:
+    inset 0 0 0 2px rgba(52, 46, 88, 0.82),
+    0 5px 0 rgba(0, 0, 0, 0.52);
+}
+
+.playfield .log-panel-header {
+  position: absolute;
+  right: 6px;
+  top: -31px;
+  margin: 0;
+}
+
+.playfield .log-panel-header span {
+  display: none;
+}
+
+.playfield .log-panel-header button {
+  min-height: 25px;
+  padding: 0 8px;
+  border-radius: 3px;
+  border: 2px solid rgba(244, 241, 255, 0.8);
+  background: rgba(7, 8, 22, 0.72);
+  color: #f4f1ff;
+  font-size: 0.68rem;
+}
+
+.playfield .log-panel li {
+  color: #f4f1ff;
+  font-size: clamp(0.82rem, 3vw, 1.12rem);
+  line-height: 1.3;
+  text-shadow:
+    1px 0 #111018,
+    0 1px #111018,
+    1px 1px #111018;
+}
+
 .log-panel {
   min-height: 96px;
   padding: 8px;

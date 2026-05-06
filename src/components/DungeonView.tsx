@@ -14,6 +14,46 @@ function tileAt(state: GameState, position: Position) {
   return state.map.tiles[position.y]?.[position.x] ?? null;
 }
 
+function MiniMap({ state }: Props) {
+  const cells = [];
+  const enemyPositions = new Set(state.enemies.map((enemy) => `${enemy.position.x},${enemy.position.y}`));
+  const itemPositions = new Set(state.groundItems.map((item) => `${item.position.x},${item.position.y}`));
+
+  for (let y = 0; y < state.map.height; y += 1) {
+    for (let x = 0; x < state.map.width; x += 1) {
+      const tile = state.map.tiles[y][x];
+      const key = `${x},${y}`;
+      const isPlayer = state.player.position.x === x && state.player.position.y === y;
+      const isStairs = state.map.stairs.x === x && state.map.stairs.y === y;
+      const className = [
+        'mini-cell',
+        tile.explored ? 'mini-explored' : '',
+        tile.visible ? 'mini-visible' : '',
+        tile.kind === 'wall' ? 'mini-wall' : '',
+        isStairs && tile.explored ? 'mini-stairs' : '',
+        itemPositions.has(key) && tile.visible ? 'mini-item' : '',
+        enemyPositions.has(key) && tile.visible ? 'mini-enemy' : '',
+        isPlayer ? 'mini-player' : '',
+      ]
+        .filter(Boolean)
+        .join(' ');
+      cells.push(<span key={key} className={className} />);
+    }
+  }
+
+  return (
+    <div
+      className="mini-map"
+      aria-hidden="true"
+      style={{
+        gridTemplateColumns: `repeat(${state.map.width}, 1fr)`,
+      }}
+    >
+      {cells}
+    </div>
+  );
+}
+
 export default function DungeonView({ state }: Props) {
   const cells = [];
   const visualEvents = state.visualEvents ?? [];
@@ -100,6 +140,7 @@ export default function DungeonView({ state }: Props) {
 
   return (
     <div className="dungeon-frame">
+      <MiniMap state={state} />
       <div
         className="dungeon-grid"
         role="grid"

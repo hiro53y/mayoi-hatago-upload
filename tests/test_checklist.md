@@ -13,6 +13,8 @@
 - [x] `dist` 静的配信で `index.html`、manifest、Service Worker、PWAアイコン取得を確認
 - [x] タイトル変更後に `npm run test` と `npm run build` が成功
 - [x] 静的配信でHTMLタイトル、manifest名、Service Workerキャッシュ名の更新を確認
+- [x] UI改修後に `npm run test` と `npm run build` が成功
+- [x] 静的配信で `playfield`、`mini-map`、`pixel-sprite` のCSS反映を確認
 
 ## 手元で追加確認推奨
 
