@@ -126,6 +126,15 @@ export interface LogEntry {
   tone?: 'normal' | 'good' | 'warn' | 'bad';
 }
 
+export interface VisualEvent {
+  id: number;
+  kind: 'playerAttack' | 'enemyAttack';
+  source: Position;
+  target: Position;
+  direction: Direction;
+  hit: boolean;
+}
+
 export interface RunStats {
   kills: number;
   itemsUsed: number;
@@ -162,6 +171,7 @@ export interface GameState {
   enemies: Enemy[];
   groundItems: GroundItem[];
   logs: LogEntry[];
+  visualEvents?: VisualEvent[];
   runStats: RunStats;
   result: GameResult | null;
 }

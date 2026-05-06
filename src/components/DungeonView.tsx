@@ -1,6 +1,7 @@
 import type { GameState, Position } from '../game/types';
 import { getItemDefinition } from '../game/items';
 import { samePosition } from '../game/pathfinding';
+import DungeonSprite from './DungeonSprite';
 
 const VIEW_SIZE = 11;
 const VIEW_RADIUS = Math.floor(VIEW_SIZE / 2);
@@ -15,6 +16,7 @@ function tileAt(state: GameState, position: Position) {
 
 export default function DungeonView({ state }: Props) {
   const cells = [];
+  const visualEvents = state.visualEvents ?? [];
   for (let vy = -VIEW_RADIUS; vy <= VIEW_RADIUS; vy += 1) {
     for (let vx = -VIEW_RADIUS; vx <= VIEW_RADIUS; vx += 1) {
       const position = {
@@ -27,21 +29,35 @@ export default function DungeonView({ state }: Props) {
       const item = tile?.visible ? state.groundItems.find((candidate) => samePosition(candidate.position, position)) : null;
       const itemDefinition = item ? getItemDefinition(item.itemId) : null;
       const isStairs = tile?.visible && tile.kind === 'stairs';
-      const lastLog = state.logs[state.logs.length - 1]?.text ?? '';
-      const actionVariant = state.turn % 2 === 0 ? 'even' : 'odd';
-      const playerActed = isPlayer && lastLog.includes('旅人の攻撃');
-      const playerWasHit = isPlayer && lastLog.includes('旅人は') && lastLog.includes('ダメージ');
-      const enemyWasHit = enemy && lastLog.includes(enemy.name) && lastLog.includes('ダメージ');
+      const playerAttackSource = isPlayer
+        ? visualEvents.find((event) => event.kind === 'playerAttack' && samePosition(event.source, position))
+        : null;
+      const playerAttackTarget = visualEvents.find((event) => event.kind === 'playerAttack' && samePosition(event.target, position));
+      const enemyAttackSource = enemy
+        ? visualEvents.find((event) => event.kind === 'enemyAttack' && samePosition(event.source, position))
+        : null;
+      const playerHit = isPlayer
+        ? visualEvents.find((event) => event.kind === 'enemyAttack' && event.hit && samePosition(event.target, position))
+        : null;
+      const enemyHit = visualEvents.find((event) => event.kind === 'playerAttack' && event.hit && samePosition(event.target, position));
+      const hitEvent = playerHit ?? enemyHit;
+      const playerActionVariant = playerAttackSource?.id && playerAttackSource.id % 2 === 0 ? 'even' : 'odd';
+      const enemyActionVariant = enemyAttackSource?.id && enemyAttackSource.id % 2 === 0 ? 'even' : 'odd';
+      const playerHitVariant = playerHit?.id && playerHit.id % 2 === 0 ? 'even' : 'odd';
+      const enemyHitVariant = enemyHit?.id && enemyHit.id % 2 === 0 ? 'even' : 'odd';
       const className = [
         'dungeon-tile',
         tile ? `tile-${tile.kind}` : 'tile-wall',
         tile?.visible ? 'visible' : tile?.explored ? 'explored' : 'unseen',
         isPlayer ? 'player-tile' : '',
-        playerActed ? `player-acted-${actionVariant}` : '',
-        playerWasHit ? `player-hit-${actionVariant}` : '',
+        isPlayer ? `player-facing-${state.player.facing}` : '',
+        playerAttackSource ? `player-acted-${playerActionVariant}` : '',
+        playerHit ? `player-hit-${playerHitVariant}` : '',
         enemy ? 'enemy-tile' : '',
         enemy ? `enemy-kind-${enemy.kindId}` : '',
-        enemyWasHit ? `enemy-hit-${actionVariant}` : '',
+        enemyHit ? `enemy-hit-${enemyHitVariant}` : '',
+        playerAttackTarget ? `attack-target-${playerAttackTarget.id % 2 === 0 ? 'even' : 'odd'}` : '',
+        enemyAttackSource ? `enemy-strike-source-${enemyActionVariant}` : '',
         item ? 'item-tile' : '',
         itemDefinition ? `item-category-${itemDefinition.category}` : '',
         isStairs ? 'stairs-tile' : '',
@@ -49,20 +65,20 @@ export default function DungeonView({ state }: Props) {
         .filter(Boolean)
         .join(' ');
       let aria = '未探索';
-      let spriteClass = '';
+      let sprite = null;
 
       if (isPlayer) {
         aria = '旅人';
-        spriteClass = 'sprite sprite-player';
+        sprite = <DungeonSprite kind="player" />;
       } else if (enemy) {
         aria = enemy.name;
-        spriteClass = `sprite sprite-enemy sprite-enemy-${enemy.kindId}`;
+        sprite = <DungeonSprite kind="enemy" enemyKind={enemy.kindId} />;
       } else if (item) {
         aria = itemDefinition?.name ?? '道具';
-        spriteClass = `sprite sprite-item sprite-item-${itemDefinition?.category ?? 'support'}`;
+        sprite = <DungeonSprite kind="item" itemCategory={itemDefinition?.category} />;
       } else if (isStairs) {
         aria = '階段';
-        spriteClass = 'sprite sprite-stairs';
+        sprite = <DungeonSprite kind="stairs" />;
       } else if (tile?.visible && tile.kind === 'wall') {
         aria = '壁';
       } else if (tile?.explored) {
@@ -71,7 +87,12 @@ export default function DungeonView({ state }: Props) {
 
       cells.push(
         <div key={`${position.x},${position.y}`} className={className} role="gridcell" aria-label={aria}>
-          {spriteClass ? <span className={spriteClass} aria-hidden="true" /> : null}
+          {sprite}
+          {playerAttackTarget ? (
+            <span key={`slash-${playerAttackTarget.id}`} className={`attack-slash slash-${playerAttackTarget.direction}`} aria-hidden="true" />
+          ) : null}
+          {hitEvent ? <span key={`hit-${hitEvent.id}`} className="hit-burst" aria-hidden="true" /> : null}
+          {enemyAttackSource ? <span key={`enemy-strike-${enemyAttackSource.id}`} className="enemy-strike-mark" aria-hidden="true" /> : null}
         </div>,
       );
     }

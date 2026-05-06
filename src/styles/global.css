@@ -336,6 +336,150 @@ dd {
     opacity 120ms ease;
 }
 
+.game-sprite {
+  position: relative;
+  z-index: 2;
+  display: block;
+  width: 96%;
+  height: 96%;
+  overflow: visible;
+  transform-origin: 50% 82%;
+  filter: drop-shadow(0 3px 2px rgba(0, 0, 0, 0.4));
+}
+
+.player-sprite {
+  width: 102%;
+  height: 102%;
+}
+
+.player-tile {
+  --player-lunge-x: 0%;
+  --player-lunge-y: 14%;
+}
+
+.player-facing-up {
+  --player-lunge-x: 0%;
+  --player-lunge-y: -16%;
+}
+
+.player-facing-down {
+  --player-lunge-x: 0%;
+  --player-lunge-y: 16%;
+}
+
+.player-facing-left {
+  --player-lunge-x: -16%;
+  --player-lunge-y: 0%;
+}
+
+.player-facing-right {
+  --player-lunge-x: 16%;
+  --player-lunge-y: 0%;
+}
+
+.enemy-sprite {
+  width: 104%;
+  height: 104%;
+}
+
+.item-sprite,
+.stairs-sprite {
+  width: 88%;
+  height: 88%;
+}
+
+.attack-slash,
+.hit-burst,
+.enemy-strike-mark {
+  pointer-events: none;
+  position: absolute;
+  z-index: 8;
+  inset: -12%;
+}
+
+.attack-slash::before,
+.attack-slash::after {
+  position: absolute;
+  content: "";
+  display: block;
+}
+
+.attack-slash::before {
+  left: 11%;
+  top: 42%;
+  width: 78%;
+  height: 18%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, #fff7c6 18%, #f0b84b 48%, #ffffff 72%, transparent);
+  box-shadow: 0 0 14px rgba(247, 214, 129, 0.95);
+  transform: rotate(-28deg) scaleX(0);
+  transform-origin: 0 50%;
+  animation: slash-sweep 260ms ease-out forwards;
+}
+
+.attack-slash::after {
+  left: 23%;
+  top: 10%;
+  width: 50%;
+  height: 72%;
+  border: 4px solid rgba(255, 247, 198, 0.95);
+  border-left-color: transparent;
+  border-bottom-color: transparent;
+  border-radius: 50%;
+  transform: rotate(36deg) scale(0.4);
+  animation: slash-arc 260ms ease-out forwards;
+}
+
+.slash-up {
+  transform: rotate(-90deg);
+}
+
+.slash-down {
+  transform: rotate(90deg);
+}
+
+.slash-left {
+  transform: rotate(180deg);
+}
+
+.hit-burst {
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 248, 205, 0.95) 0 8%, transparent 9%),
+    radial-gradient(circle at 30% 45%, rgba(255, 111, 81, 0.9) 0 7%, transparent 8%),
+    radial-gradient(circle at 68% 55%, rgba(255, 190, 80, 0.8) 0 7%, transparent 8%);
+  animation: hit-burst 260ms ease-out forwards;
+}
+
+.enemy-strike-mark::before {
+  position: absolute;
+  content: "";
+  left: 9%;
+  top: 20%;
+  width: 82%;
+  height: 55%;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 141, 101, 0.88);
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+  transform: rotate(-25deg);
+  animation: enemy-strike 280ms ease-out forwards;
+}
+
+.attack-target-even,
+.attack-target-odd {
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 247, 198, 0.8),
+    0 0 18px rgba(240, 184, 75, 0.55) !important;
+}
+
+.enemy-strike-source-even .game-sprite {
+  animation: enemy-lunge-even 260ms ease-out;
+}
+
+.enemy-strike-source-odd .game-sprite {
+  animation: enemy-lunge-odd 260ms ease-out;
+}
+
 .sprite {
   position: relative;
   display: block;
@@ -520,6 +664,30 @@ dd {
 
 .enemy-hit-odd .sprite-enemy {
   animation: enemy-hit-odd 220ms ease-out;
+}
+
+.player-acted-even .player-sprite {
+  animation: player-lunge-strong-even 260ms ease-out;
+}
+
+.player-acted-odd .player-sprite {
+  animation: player-lunge-strong-odd 260ms ease-out;
+}
+
+.player-hit-even .player-sprite {
+  animation: player-hit-strong-even 300ms ease-out;
+}
+
+.player-hit-odd .player-sprite {
+  animation: player-hit-strong-odd 300ms ease-out;
+}
+
+.enemy-hit-even .enemy-sprite {
+  animation: enemy-hit-strong-even 300ms ease-out;
+}
+
+.enemy-hit-odd .enemy-sprite {
+  animation: enemy-hit-strong-odd 300ms ease-out;
 }
 
 .tile-wall.visible {
@@ -997,6 +1165,161 @@ dd {
   35% {
     transform: scale(0.84) rotate(7deg);
     filter: drop-shadow(0 0 7px rgba(247, 214, 129, 0.9));
+  }
+}
+
+@keyframes slash-sweep {
+  0% {
+    opacity: 0;
+    transform: rotate(-28deg) scaleX(0);
+  }
+  22% {
+    opacity: 1;
+  }
+  82% {
+    opacity: 1;
+    transform: rotate(-28deg) scaleX(1);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(-28deg) scaleX(1.06);
+  }
+}
+
+@keyframes slash-arc {
+  0% {
+    opacity: 0;
+    transform: rotate(10deg) scale(0.32);
+  }
+  42% {
+    opacity: 1;
+    transform: rotate(36deg) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(58deg) scale(1.08);
+  }
+}
+
+@keyframes hit-burst {
+  0% {
+    opacity: 0;
+    transform: scale(0.35) rotate(0deg);
+  }
+  35% {
+    opacity: 1;
+    transform: scale(1.08) rotate(8deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.35) rotate(18deg);
+  }
+}
+
+@keyframes enemy-strike {
+  0% {
+    opacity: 0;
+    transform: rotate(-35deg) scale(0.45);
+  }
+  48% {
+    opacity: 1;
+    transform: rotate(-15deg) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: rotate(6deg) scale(1.12);
+  }
+}
+
+@keyframes enemy-lunge-even {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  45% {
+    transform: translateY(-10%) scale(1.1) rotate(-5deg);
+  }
+}
+
+@keyframes enemy-lunge-odd {
+  0%,
+  100% {
+    transform: translateY(0) scale(1);
+  }
+  45% {
+    transform: translateY(-10%) scale(1.1) rotate(5deg);
+  }
+}
+
+@keyframes player-lunge-strong-even {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  42% {
+    transform: translate(var(--player-lunge-x), var(--player-lunge-y)) scale(1.15) rotate(-5deg);
+    filter: drop-shadow(0 5px 4px rgba(0, 0, 0, 0.44)) drop-shadow(0 0 8px rgba(247, 214, 129, 0.75));
+  }
+}
+
+@keyframes player-lunge-strong-odd {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  42% {
+    transform: translate(var(--player-lunge-x), var(--player-lunge-y)) scale(1.15) rotate(5deg);
+    filter: drop-shadow(0 5px 4px rgba(0, 0, 0, 0.44)) drop-shadow(0 0 8px rgba(247, 214, 129, 0.75));
+  }
+}
+
+@keyframes player-hit-strong-even {
+  0%,
+  100% {
+    transform: translateX(0) scale(1);
+  }
+  28% {
+    transform: translateX(-12%) scale(0.95);
+    filter: drop-shadow(0 0 8px rgba(255, 102, 82, 0.95));
+  }
+  56% {
+    transform: translateX(9%) scale(1.02);
+  }
+}
+
+@keyframes player-hit-strong-odd {
+  0%,
+  100% {
+    transform: translateX(0) scale(1);
+  }
+  28% {
+    transform: translateX(12%) scale(0.95);
+    filter: drop-shadow(0 0 8px rgba(255, 102, 82, 0.95));
+  }
+  56% {
+    transform: translateX(-9%) scale(1.02);
+  }
+}
+
+@keyframes enemy-hit-strong-even {
+  0%,
+  100% {
+    transform: translateX(0) scale(1);
+  }
+  34% {
+    transform: translateX(10%) scale(0.82) rotate(8deg);
+    filter: drop-shadow(0 0 10px rgba(255, 226, 136, 0.95));
+  }
+}
+
+@keyframes enemy-hit-strong-odd {
+  0%,
+  100% {
+    transform: translateX(0) scale(1);
+  }
+  34% {
+    transform: translateX(-10%) scale(0.82) rotate(-8deg);
+    filter: drop-shadow(0 0 10px rgba(255, 226, 136, 0.95));
   }
 }
 

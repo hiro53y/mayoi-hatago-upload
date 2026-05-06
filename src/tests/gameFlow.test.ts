@@ -88,4 +88,8 @@ export function runGameFlowTests(): void {
     attackState = performPlayerAction(attackState, attackCommand);
   }
   equal(attackState.enemies.length, 0, 'contact attack should defeat adjacent enemy');
+  assert(
+    attackState.visualEvents?.some((event) => event.kind === 'playerAttack' && event.hit),
+    'contact attack should emit a visible hit event',
+  );
 }

@@ -18,6 +18,9 @@
 - [x] `deliverables/mayoi-hatago-upload` をGitHubアップロード用に作成
 - [x] 漢字タイル表示をオリジナルシルエット表示へ変更し、攻撃/被弾モーションを追加
 - [x] PWA対応: manifest、Service Worker、PNGアイコン生成、HTMLメタタグを追加
+- [x] SVGスプライト化: 旅人、敵、道具、階段をオリジナル2Dイラストに差し替え
+- [x] 攻撃演出強化: ログ推測ではなくVisualEventで斬撃、敵攻撃、被弾を確実に表示
+- [x] 回帰テスト追加: 接触攻撃でVisualEventが発火することを確認
 
 ## 未着手
 

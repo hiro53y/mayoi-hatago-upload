@@ -2,7 +2,7 @@ import { HUNGER_DAMAGE, HUNGER_WARNING, INVENTORY_LIMIT, MAX_FLOOR } from './con
 import { calculateDamage, didHit } from './combat';
 import { getPlayerAttack, getPlayerDefense, getPlayerHitRate } from './equipment';
 import { runEnemyPhase } from './enemyAI';
-import { enterFloor, appendLog } from './gameState';
+import { enterFloor, appendLog, appendVisualEvent } from './gameState';
 import { createInventoryItem, getItemDefinition, isInventoryFull } from './items';
 import { updateVisibility } from './mapGenerator';
 import { manhattan, positionKey, samePosition } from './pathfinding';
@@ -101,7 +101,17 @@ function defeatEnemy(state: GameState, enemy: Enemy): GameState {
 
 function attackEnemy(state: GameState, enemy: Enemy, rng: Rng): GameState {
   if (!didHit(getPlayerHitRate(state.player), rng)) {
-    return appendLog(state, `旅人の攻撃は外れた。`, 'normal');
+    return appendLog(
+      appendVisualEvent(state, {
+        kind: 'playerAttack',
+        source: { ...state.player.position },
+        target: { ...enemy.position },
+        direction: state.player.facing,
+        hit: false,
+      }),
+      `旅人の攻撃は外れた。`,
+      'normal',
+    );
   }
 
   const damage = calculateDamage(getPlayerAttack(state.player), enemy.defense, rng);
@@ -110,6 +120,13 @@ function attackEnemy(state: GameState, enemy: Enemy, rng: Rng): GameState {
     ...state,
     enemies: state.enemies.map((candidate) => (candidate.id === enemy.id ? nextEnemy : candidate)),
   };
+  nextState = appendVisualEvent(nextState, {
+    kind: 'playerAttack',
+    source: { ...state.player.position },
+    target: { ...enemy.position },
+    direction: state.player.facing,
+    hit: true,
+  });
   nextState = appendLog(nextState, `旅人の攻撃。${enemy.name}に${damage}ダメージ。`, 'normal');
   if (nextEnemy.hp <= 0) nextState = defeatEnemy(nextState, nextEnemy);
   return nextState;
@@ -496,7 +513,7 @@ function advanceTurn(state: GameState, rng: Rng, skipEnemy: boolean): GameState 
 
 export function performPlayerAction(inputState: GameState, command: PlayerCommand): GameState {
   if (inputState.status !== 'playing') return inputState;
-  let state: GameState = cloneGameState(inputState);
+  let state: GameState = { ...cloneGameState(inputState), visualEvents: [] };
   const rng = createRng(state.rngState);
   let consumed = false;
   let skipEnemy = false;

@@ -1,10 +1,11 @@
 import { ENEMY_DEFINITIONS, enemyCountForFloor } from './balance';
 import { calculateDamage, didHit } from './combat';
 import { getPlayerDefense, getStatusResistance } from './equipment';
+import { appendVisualEvent } from './gameState';
 import { findPath, isWalkable, manhattan, positionKey, samePosition } from './pathfinding';
 import { randomId, type Rng } from './rng';
 import { addOrRefreshStatus } from './statusEffects';
-import type { DungeonMap, Enemy, EnemyDefinition, GameState, Position } from './types';
+import type { Direction, DungeonMap, Enemy, EnemyDefinition, GameState, Position } from './types';
 
 function chooseEnemyDefinition(floor: number, rng: Rng): EnemyDefinition {
   const available = ENEMY_DEFINITIONS.filter((enemy) => enemy.minFloor <= floor);
@@ -23,6 +24,14 @@ function randomFloorPositions(map: DungeonMap): Position[] {
     }
   }
   return positions;
+}
+
+function directionBetween(source: Position, target: Position): Direction {
+  const dx = target.x - source.x;
+  const dy = target.y - source.y;
+  if (Math.abs(dx) > Math.abs(dy)) return dx < 0 ? 'left' : 'right';
+  if (dy < 0) return 'up';
+  return 'down';
 }
 
 export function createEnemiesForFloor(map: DungeonMap, floor: number, avoidPositions: Position[], rng: Rng): Enemy[] {
@@ -66,14 +75,22 @@ export function createEnemiesForFloor(map: DungeonMap, floor: number, avoidPosit
 
 function enemyAttackPlayer(state: GameState, enemy: Enemy, rng: Rng): GameState {
   const hit = didHit(0.86, rng);
+  let nextState = appendVisualEvent(state, {
+    kind: 'enemyAttack',
+    source: { ...enemy.position },
+    target: { ...state.player.position },
+    direction: directionBetween(enemy.position, state.player.position),
+    hit,
+  });
   if (!hit) {
-    return addEnemyLog(state, `${enemy.name}の攻撃は外れた。`, 'normal');
+    return addEnemyLog(nextState, `${enemy.name}の攻撃は外れた。`, 'normal');
   }
 
   const damage = calculateDamage(enemy.attack, getPlayerDefense(state.player), rng);
   let player = { ...state.player, hp: Math.max(0, state.player.hp - damage) };
-  let nextState = {
+  nextState = {
     ...state,
+    visualEvents: nextState.visualEvents,
     player,
   };
   nextState = addEnemyLog(nextState, `${enemy.name}の攻撃。旅人は${damage}ダメージ。`, 'bad');

@@ -5,7 +5,7 @@ import { createGroundItems } from './items';
 import { generateDungeonMap, updateVisibility } from './mapGenerator';
 import { hashSeed, createRng, randomId } from './rng';
 import { getVisionRadius } from './statusEffects';
-import type { GameState, LogEntry, Player } from './types';
+import type { GameState, LogEntry, Player, VisualEvent } from './types';
 
 export function createInitialPlayer(): Player {
   return {
@@ -47,6 +47,15 @@ export function appendLog(
   return { ...state, logs: nextLogs };
 }
 
+export function appendVisualEvent(state: GameState, event: Omit<VisualEvent, 'id'>): GameState {
+  const currentEvents = state.visualEvents ?? [];
+  const lastId = currentEvents.length > 0 ? currentEvents[currentEvents.length - 1].id : state.turn * 100;
+  return {
+    ...state,
+    visualEvents: [...currentEvents, { ...event, id: lastId + 1 }].slice(-8),
+  };
+}
+
 export function enterFloor(state: GameState, floor: number): GameState {
   const floorSeed = hashSeed(`${state.seed}:${floor}`);
   const rng = createRng(state.rngState ^ floorSeed);
@@ -75,6 +84,7 @@ export function enterFloor(state: GameState, floor: number): GameState {
       player,
       enemies,
       groundItems: groundItemResult.items,
+      visualEvents: [],
       runStats: {
         ...state.runStats,
         deepestFloor: Math.max(state.runStats.deepestFloor, floor),
@@ -100,6 +110,7 @@ export function createNewGame(seedInput: string | number = Date.now()): GameStat
     enemies: [],
     groundItems: [],
     logs: [],
+    visualEvents: [],
     runStats: {
       kills: 0,
       itemsUsed: 0,
