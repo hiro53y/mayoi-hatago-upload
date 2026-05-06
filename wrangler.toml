@@ -1,0 +1,5 @@
+name = "mayoi-hatago"
+pages_build_output_dir = "dist"
+
+[vars]
+APP_NAME = "迷宮旅籠"

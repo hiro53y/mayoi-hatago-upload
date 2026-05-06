@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.test-build/
+out/*
+!out/.gitkeep
+*.local
+.DS_Store
+npm-debug.log*
+coverage/
+.vite/
+*.tsbuildinfo
