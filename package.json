@@ -7,8 +7,8 @@
     "node": ">=20.19.0"
   },
   "scripts": {
-    "dev": "vite --host 0.0.0.0",
-    "build": "tsc -b && vite build",
+    "dev": "node scripts/generate-pwa-icons.cjs && vite --host 0.0.0.0",
+    "build": "node scripts/generate-pwa-icons.cjs && tsc -b && vite build",
     "preview": "vite preview --host 0.0.0.0",
     "test": "tsc -p tsconfig.test.json && node scripts/prepare-test-build.cjs && node .test-build/tests/run-tests.js"
   },

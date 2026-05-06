@@ -336,11 +336,190 @@ dd {
     opacity 120ms ease;
 }
 
-.dungeon-tile span {
-  width: 100%;
-  overflow: hidden;
-  text-align: center;
-  white-space: nowrap;
+.sprite {
+  position: relative;
+  display: block;
+  width: 74%;
+  height: 74%;
+  transform-origin: 50% 80%;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.34));
+}
+
+.sprite::before,
+.sprite::after {
+  position: absolute;
+  content: "";
+  display: block;
+}
+
+.sprite-player {
+  width: 76%;
+  height: 82%;
+}
+
+.sprite-player::before {
+  inset: 24% 22% 5%;
+  border-radius: 48% 48% 36% 36%;
+  background:
+    linear-gradient(90deg, transparent 0 18%, rgba(255, 244, 223, 0.8) 18% 25%, transparent 25% 75%, rgba(255, 244, 223, 0.8) 75% 82%, transparent 82%),
+    linear-gradient(180deg, #355f7f 0%, #20354c 68%, #17120f 100%);
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.28);
+}
+
+.sprite-player::after {
+  left: 32%;
+  top: 5%;
+  width: 36%;
+  height: 30%;
+  border-radius: 50% 50% 44% 44%;
+  background: #f0d4a8;
+  box-shadow:
+    -8px 10px 0 -5px #2a1e18,
+    8px 10px 0 -5px #2a1e18,
+    0 -4px 0 #2a1e18;
+}
+
+.sprite-enemy {
+  width: 76%;
+  height: 76%;
+}
+
+.sprite-enemy::before {
+  inset: 14% 12% 7%;
+  border-radius: 52% 52% 44% 44%;
+  background: linear-gradient(180deg, #9d463c 0%, #682a2a 100%);
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.24);
+}
+
+.sprite-enemy::after {
+  left: 22%;
+  top: 34%;
+  width: 56%;
+  height: 12%;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 18% 50%, #f7d681 0 16%, transparent 18%),
+    radial-gradient(circle at 82% 50%, #f7d681 0 16%, transparent 18%);
+}
+
+.sprite-enemy-kusakage-kitsune::before {
+  clip-path: polygon(50% 0, 70% 22%, 94% 18%, 84% 48%, 92% 100%, 8% 100%, 16% 48%, 6% 18%, 30% 22%);
+  background: linear-gradient(180deg, #b96b38, #6e3525);
+}
+
+.sprite-enemy-tsuchikure-musha::before,
+.sprite-enemy-sabi-yoroi::before {
+  border-radius: 26% 26% 38% 38%;
+  background: linear-gradient(180deg, #75695d, #3b332d);
+}
+
+.sprite-enemy-akari-onibi::before {
+  border-radius: 55% 55% 48% 48%;
+  clip-path: polygon(50% 0, 66% 24%, 84% 31%, 73% 52%, 88% 100%, 50% 85%, 12% 100%, 27% 52%, 16% 31%, 34% 24%);
+  background: linear-gradient(180deg, #f3c66e 0%, #b94a35 58%, #5f2430 100%);
+}
+
+.sprite-enemy-harapeko-kappa::before {
+  background: linear-gradient(180deg, #7f9a62, #415331);
+}
+
+.sprite-enemy-kage-boshi::before {
+  background: linear-gradient(180deg, #53466a, #1c1724);
+}
+
+.sprite-item {
+  width: 62%;
+  height: 62%;
+}
+
+.sprite-item::before {
+  inset: 12%;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #dfc77f, #8f6f34);
+  transform: rotate(45deg);
+}
+
+.sprite-item-healing::before,
+.item-category-healing .sprite-item::before {
+  border-radius: 50% 50% 44% 44%;
+  background: linear-gradient(180deg, #d8f0b0, #6f8f42);
+}
+
+.sprite-item-food::before,
+.item-category-food .sprite-item::before {
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 42%, #fff0d2 0 38%, transparent 40%),
+    linear-gradient(180deg, #c67e45, #7f3f2a);
+}
+
+.sprite-item-offense::before,
+.item-category-offense .sprite-item::before {
+  border-radius: 3px;
+  background: linear-gradient(180deg, #f5df93, #c45338);
+  clip-path: polygon(50% 0, 100% 48%, 58% 48%, 82% 100%, 0 38%, 42% 38%);
+}
+
+.sprite-item-support::before,
+.item-category-support .sprite-item::before {
+  border-radius: 50%;
+  background: radial-gradient(circle, #efe4d2 0 28%, #7d97a8 32% 62%, #334d60 66%);
+}
+
+.sprite-item-weapon::before,
+.item-category-weapon .sprite-item::before {
+  left: 45%;
+  top: 2%;
+  width: 12%;
+  height: 92%;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #e8eef0, #7f8c90 54%, #5b3828 55% 100%);
+  transform: rotate(36deg);
+}
+
+.sprite-item-armor::before,
+.item-category-armor .sprite-item::before {
+  inset: 5% 18%;
+  border-radius: 45% 45% 22% 22%;
+  background: linear-gradient(180deg, #7c8790, #2e3940);
+}
+
+.sprite-stairs {
+  width: 72%;
+  height: 72%;
+}
+
+.sprite-stairs::before {
+  inset: 16% 10%;
+  border-radius: 5px;
+  background:
+    linear-gradient(180deg, transparent 0 26%, rgba(36, 29, 26, 0.35) 26% 32%, transparent 32% 55%, rgba(36, 29, 26, 0.35) 55% 61%, transparent 61%),
+    linear-gradient(135deg, #f2d18d, #8d5d2f);
+  transform: skewY(-12deg);
+}
+
+.player-acted-even .sprite-player {
+  animation: player-lunge-even 160ms ease-out;
+}
+
+.player-acted-odd .sprite-player {
+  animation: player-lunge-odd 160ms ease-out;
+}
+
+.player-hit-even .sprite-player {
+  animation: player-hit-even 220ms ease-out;
+}
+
+.player-hit-odd .sprite-player {
+  animation: player-hit-odd 220ms ease-out;
+}
+
+.enemy-hit-even .sprite-enemy {
+  animation: enemy-hit-even 220ms ease-out;
+}
+
+.enemy-hit-odd .sprite-enemy {
+  animation: enemy-hit-odd 220ms ease-out;
 }
 
 .tile-wall.visible {
@@ -744,6 +923,90 @@ dd {
   }
   to {
     box-shadow: inset 0 0 0 2px rgba(255, 244, 223, 0.55), 0 0 12px rgba(215, 168, 75, 0.5);
+  }
+}
+
+@keyframes player-lunge-even {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  48% {
+    transform: translateY(-12%) scale(1.08);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes player-lunge-odd {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  48% {
+    transform: translateY(-12%) scale(1.08);
+  }
+  100% {
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes player-hit-even {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  30% {
+    transform: translateX(-10%);
+    filter: drop-shadow(0 0 5px rgba(255, 120, 96, 0.9));
+  }
+  60% {
+    transform: translateX(10%);
+  }
+}
+
+@keyframes player-hit-odd {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  30% {
+    transform: translateX(-10%);
+    filter: drop-shadow(0 0 5px rgba(255, 120, 96, 0.9));
+  }
+  60% {
+    transform: translateX(10%);
+  }
+}
+
+@keyframes enemy-hit-even {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(0.84) rotate(-7deg);
+    filter: drop-shadow(0 0 7px rgba(247, 214, 129, 0.9));
+  }
+}
+
+@keyframes enemy-hit-odd {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(0.84) rotate(7deg);
+    filter: drop-shadow(0 0 7px rgba(247, 214, 129, 0.9));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
   }
 }
 

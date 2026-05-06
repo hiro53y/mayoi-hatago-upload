@@ -16,6 +16,8 @@
 - [x] Phase 12: CSS品質調整、エラー処理、テスト、README完成
 - [x] 追加デバッグ: `structuredClone`依存除去、敵AI境界判定修正、回帰テスト追加
 - [x] `deliverables/mayoi-hatago-upload` をGitHubアップロード用に作成
+- [x] 漢字タイル表示をオリジナルシルエット表示へ変更し、攻撃/被弾モーションを追加
+- [x] PWA対応: manifest、Service Worker、PNGアイコン生成、HTMLメタタグを追加
 
 ## 未着手
 

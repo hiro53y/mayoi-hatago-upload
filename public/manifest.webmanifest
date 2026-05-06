@@ -1,0 +1,33 @@
+{
+  "id": "/",
+  "name": "迷宮旅籠 - Mayoi Hatago -",
+  "short_name": "迷宮旅籠",
+  "description": "スマホ向け和風ターン制ダンジョンローグライク",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#17120f",
+  "theme_color": "#241d1a",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

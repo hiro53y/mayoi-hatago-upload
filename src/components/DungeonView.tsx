@@ -25,35 +25,45 @@ export default function DungeonView({ state }: Props) {
       const isPlayer = samePosition(position, state.player.position);
       const enemy = tile?.visible ? state.enemies.find((candidate) => samePosition(candidate.position, position)) : null;
       const item = tile?.visible ? state.groundItems.find((candidate) => samePosition(candidate.position, position)) : null;
+      const itemDefinition = item ? getItemDefinition(item.itemId) : null;
       const isStairs = tile?.visible && tile.kind === 'stairs';
+      const lastLog = state.logs[state.logs.length - 1]?.text ?? '';
+      const actionVariant = state.turn % 2 === 0 ? 'even' : 'odd';
+      const playerActed = isPlayer && lastLog.includes('旅人の攻撃');
+      const playerWasHit = isPlayer && lastLog.includes('旅人は') && lastLog.includes('ダメージ');
+      const enemyWasHit = enemy && lastLog.includes(enemy.name) && lastLog.includes('ダメージ');
       const className = [
         'dungeon-tile',
         tile ? `tile-${tile.kind}` : 'tile-wall',
         tile?.visible ? 'visible' : tile?.explored ? 'explored' : 'unseen',
         isPlayer ? 'player-tile' : '',
+        playerActed ? `player-acted-${actionVariant}` : '',
+        playerWasHit ? `player-hit-${actionVariant}` : '',
         enemy ? 'enemy-tile' : '',
+        enemy ? `enemy-kind-${enemy.kindId}` : '',
+        enemyWasHit ? `enemy-hit-${actionVariant}` : '',
         item ? 'item-tile' : '',
+        itemDefinition ? `item-category-${itemDefinition.category}` : '',
         isStairs ? 'stairs-tile' : '',
       ]
         .filter(Boolean)
         .join(' ');
-      let label = '';
       let aria = '未探索';
+      let spriteClass = '';
 
       if (isPlayer) {
-        label = '旅';
         aria = '旅人';
+        spriteClass = 'sprite sprite-player';
       } else if (enemy) {
-        label = enemy.name.slice(0, 1);
         aria = enemy.name;
+        spriteClass = `sprite sprite-enemy sprite-enemy-${enemy.kindId}`;
       } else if (item) {
-        label = '道';
-        aria = getItemDefinition(item.itemId).name;
+        aria = itemDefinition?.name ?? '道具';
+        spriteClass = `sprite sprite-item sprite-item-${itemDefinition?.category ?? 'support'}`;
       } else if (isStairs) {
-        label = '階';
         aria = '階段';
+        spriteClass = 'sprite sprite-stairs';
       } else if (tile?.visible && tile.kind === 'wall') {
-        label = '';
         aria = '壁';
       } else if (tile?.explored) {
         aria = '探索済み';
@@ -61,7 +71,7 @@ export default function DungeonView({ state }: Props) {
 
       cells.push(
         <div key={`${position.x},${position.y}`} className={className} role="gridcell" aria-label={aria}>
-          <span>{label}</span>
+          {spriteClass ? <span className={spriteClass} aria-hidden="true" /> : null}
         </div>,
       );
     }
