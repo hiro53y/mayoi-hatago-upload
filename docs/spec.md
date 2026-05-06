@@ -4,7 +4,7 @@
 
 ## 目的
 
-スマホブラウザで快適に遊べる、和風ターン制ダンジョンローグライク「迷宮旅籠 - Mayoi Hatago -」を React + TypeScript + Vite で実装する。Cloudflare Pages の静的サイト公開を前提に、外部サーバー、認証、課金、Workers、Pages Functions は初期実装に含めない。
+スマホブラウザで快適に遊べる、和風ターン制ダンジョンローグライク「不思議なダンジョンもどき - Fushigina Dungeon Modoki -」を React + TypeScript + Vite で実装する。Cloudflare Pages の静的サイト公開を前提に、外部サーバー、認証、課金、Workers、Pages Functions は初期実装に含めない。
 
 ## 権利方針
 

@@ -11,6 +11,6 @@ export const HUNGER_WARNING = 20;
 export const HUNGER_DAMAGE = 2;
 export const AUTO_HEAL_INTERVAL = 4;
 export const STORAGE_KEYS = {
-  progress: 'mayoi-hatago-progress-v1',
-  records: 'mayoi-hatago-records-v1',
+  progress: 'fushigina-dungeon-modoki-progress-v1',
+  records: 'fushigina-dungeon-modoki-records-v1',
 } as const;

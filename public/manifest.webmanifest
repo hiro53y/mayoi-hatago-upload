@@ -1,7 +1,7 @@
 {
   "id": "/",
-  "name": "迷宮旅籠 - Mayoi Hatago -",
-  "short_name": "迷宮旅籠",
+  "name": "不思議なダンジョンもどき - Fushigina Dungeon Modoki -",
+  "short_name": "ダンジョンもどき",
   "description": "スマホ向け和風ターン制ダンジョンローグライク",
   "start_url": "/",
   "scope": "/",

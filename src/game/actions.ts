@@ -429,7 +429,7 @@ function tryDescend(state: GameState): { state: GameState; consumed: boolean; sk
       },
     };
     return {
-      state: appendLog(finishRun(nextState, 'clear', '10階到達'), '10階に到達した。迷宮旅籠を踏破した。', 'good'),
+      state: appendLog(finishRun(nextState, 'clear', '10階到達'), '10階に到達した。不思議なダンジョンもどきを踏破した。', 'good'),
       consumed: true,
       skipEnemy: true,
     };

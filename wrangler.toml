@@ -1,5 +1,5 @@
-name = "mayoi-hatago"
+name = "fushigina-dungeon-modoki"
 pages_build_output_dir = "dist"
 
 [vars]
-APP_NAME = "迷宮旅籠"
+APP_NAME = "不思議なダンジョンもどき"

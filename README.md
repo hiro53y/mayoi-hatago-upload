@@ -1,10 +1,10 @@
-# 迷宮旅籠 - Mayoi Hatago -
+# 不思議なダンジョンもどき - Fushigina Dungeon Modoki -
 
 このフォルダ `deliverables/mayoi-hatago-upload` が、GitHub にアップロードするリポジトリ本体です。GitHub / Cloudflare Pages では、このフォルダの中身をリポジトリ直下として扱ってください。
 
 ## 概要
 
-迷宮旅籠は、スマホ縦画面を最優先にした和風ターン制ダンジョンローグライクです。React + TypeScript + Vite の静的サイトとして実装しており、GitHub に push すれば Cloudflare Pages の標準的な Git 連携で公開できます。
+不思議なダンジョンもどきは、スマホ縦画面を最優先にした和風ターン制ダンジョンローグライクです。React + TypeScript + Vite の静的サイトとして実装しており、GitHub に push すれば Cloudflare Pages の標準的な Git 連携で公開できます。
 
 既存作品の固有名称、キャラクター、敵名、アイテム名、地名、UI配置、台詞、画像、音楽、効果音、ストーリー設定は使用していません。ゲームシステム上の一般的なローグライク要素を、オリジナル名称と独自UIで構成しています。
 

@@ -14,8 +14,8 @@ export default function TitleScreen({ hasSave, records, onNewGame, onContinue, o
     <section className="title-screen">
       <div className="title-lantern" aria-hidden="true" />
       <p className="eyebrow">Turn-based dungeon roguelike</p>
-      <h1>迷宮旅籠</h1>
-      <p className="subtitle">Mayoi Hatago</p>
+      <h1>不思議なダンジョンもどき</h1>
+      <p className="subtitle">Fushigina Dungeon Modoki</p>
       <div className="title-actions">
         <button className="primary-button" type="button" onClick={onNewGame}>
           新しく始める

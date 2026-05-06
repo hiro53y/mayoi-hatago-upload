@@ -9,6 +9,8 @@
 
 ## 変更内容
 
+- ゲームタイトルを `不思議なダンジョンもどき` に統一。
+- HTMLタイトル、PWA manifest、Service Workerキャッシュ名、localStorageキー、README、仕様メモ、Wrangler設定を更新。
 - オリジナル2Dスプライトを追加。
 - 接触攻撃、敵攻撃、被弾のモーションを強化。
 - 攻撃時に `VisualEvent` を発行し、斬撃とヒット表示を確実に出すようにした。
