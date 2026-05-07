@@ -1,9 +1,10 @@
 import { HUNGER_DAMAGE, HUNGER_WARNING, INVENTORY_LIMIT, MAX_FLOOR } from './constants';
 import { calculateDamage, didHit } from './combat';
-import { getPlayerAttack, getPlayerDefense, getPlayerHitRate } from './equipment';
+import { getEquippedArmor, getEquippedWeapon, getPlayerAttack, getPlayerHitRate } from './equipment';
 import { runEnemyPhase } from './enemyAI';
+import { getTrapName, progressMiniObjective } from './floorFeatures';
 import { enterFloor, appendLog, appendVisualEvent } from './gameState';
-import { createInventoryItem, getItemDefinition, isInventoryFull } from './items';
+import { createInventoryItem, getInventoryItemDisplay, getItemDefinition, isInventoryFull } from './items';
 import { updateVisibility } from './mapGenerator';
 import { manhattan, positionKey, samePosition } from './pathfinding';
 import { createRng, type Rng } from './rng';
@@ -43,6 +44,28 @@ function deltaFromDirection(direction: Direction): Position {
 
 function enemyAt(enemies: Enemy[], position: Position): Enemy | undefined {
   return enemies.find((enemy) => enemy.hp > 0 && samePosition(enemy.position, position));
+}
+
+function playerAttackPowerAgainst(state: GameState, enemy: Enemy): number {
+  const weapon = getEquippedWeapon(state.player);
+  const baseAttack = getPlayerAttack(state.player);
+  if (
+    weapon?.itemId === 'yamamori-sword' &&
+    ['mayoi-tanuki', 'kusakage-kitsune', 'harapeko-kappa'].includes(enemy.kindId)
+  ) {
+    return baseAttack + 2;
+  }
+  return baseAttack;
+}
+
+function completeObjectiveIfNeeded(state: GameState, type: 'defeat' | 'collect' | 'reachStairs'): GameState {
+  const result = progressMiniObjective(state, type);
+  if (!result.completed) return result.state;
+  return appendLog(
+    result.state,
+    `小目標を達成した。${state.miniObjective?.rewardScore ?? 0}Gを得た。`,
+    'good',
+  );
 }
 
 function cloneGameState(state: GameState): GameState {
@@ -90,6 +113,7 @@ function defeatEnemy(state: GameState, enemy: Enemy): GameState {
     },
   };
   nextState = appendLog(nextState, `${enemy.name}を倒した。経験値${enemy.exp}を得た。`, 'good');
+  nextState = completeObjectiveIfNeeded(nextState, 'defeat');
   const expResult = grantExperience(nextState.player, enemy.exp);
   nextState = {
     ...nextState,
@@ -114,7 +138,7 @@ function attackEnemy(state: GameState, enemy: Enemy, rng: Rng): GameState {
     );
   }
 
-  const damage = calculateDamage(getPlayerAttack(state.player), enemy.defense, rng);
+  const damage = calculateDamage(playerAttackPowerAgainst(state, enemy), enemy.defense, rng);
   const nextEnemy = { ...enemy, hp: enemy.hp - damage };
   let nextState = {
     ...state,
@@ -143,18 +167,99 @@ function pickupItems(state: GameState, rng: Rng): GameState {
       nextState = appendLog(nextState, `持ち物がいっぱいで、${definition.name}を拾えない。`, 'warn');
       continue;
     }
+    const inventoryItem = createInventoryItem(item.itemId, rng);
     nextState = {
       ...nextState,
       groundItems: nextState.groundItems.filter((groundItem) => groundItem.id !== item.id),
       player: {
         ...nextState.player,
-        inventory: [...nextState.player.inventory, createInventoryItem(item.itemId, rng)],
+        inventory: [...nextState.player.inventory, inventoryItem],
       },
     };
-    nextState = appendLog(nextState, `${definition.name}を拾った。`, 'good');
+    nextState = appendLog(nextState, `${getInventoryItemDisplay(inventoryItem).name}を拾った。`, 'good');
+    nextState = completeObjectiveIfNeeded(nextState, 'collect');
   }
 
   return nextState;
+}
+
+function triggerTrapAt(state: GameState, rng: Rng): GameState {
+  const trap = state.traps?.find(
+    (candidate) => !candidate.triggered && samePosition(candidate.position, state.player.position),
+  );
+  if (!trap) return state;
+
+  const armor = getEquippedArmor(state.player);
+  if (armor?.itemId === 'bamboo-hat' && rng.chance(0.3)) {
+    return appendLog(
+      {
+        ...state,
+        traps: state.traps?.map((candidate) =>
+          candidate.id === trap.id ? { ...candidate, revealed: true } : candidate,
+        ),
+      },
+      `竹編みの笠が揺れ、${getTrapName(trap.type)}に気づいた。`,
+      'good',
+    );
+  }
+
+  let nextState: GameState = {
+    ...state,
+    traps: state.traps?.map((candidate) =>
+      candidate.id === trap.id ? { ...candidate, revealed: true, triggered: true } : candidate,
+    ),
+  };
+
+  if (trap.type === 'slow-mud') {
+    nextState = {
+      ...nextState,
+      player: {
+        ...nextState.player,
+        statusEffects: addOrRefreshStatus(nextState.player.statusEffects, { type: 'slow', turns: 5 }),
+      },
+    };
+    return appendLog(nextState, '絡み泥を踏んだ。足が重くなった。', 'warn');
+  }
+
+  if (trap.type === 'hunger-floor') {
+    nextState = {
+      ...nextState,
+      player: {
+        ...nextState.player,
+        hunger: Math.max(0, nextState.player.hunger - 10),
+      },
+    };
+    return appendLog(nextState, '腹減らし床が鳴った。満腹度が10減った。', 'warn');
+  }
+
+  return appendLog(
+    {
+      ...nextState,
+      enemies: nextState.enemies.map((enemy) => ({
+        ...enemy,
+        awakeRange: Math.max(enemy.awakeRange, 10),
+      })),
+    },
+    '呼び鈴床が鳴り、周囲の敵がこちらに気づいた。',
+    'bad',
+  );
+}
+
+function spearReachEnemy(state: GameState, dx: number, dy: number): Enemy | undefined {
+  const weapon = getEquippedWeapon(state.player);
+  if (weapon?.itemId !== 'old-spear') return undefined;
+  const secondTile = {
+    x: state.player.position.x + dx * 2,
+    y: state.player.position.y + dy * 2,
+  };
+  const middleTile = {
+    x: state.player.position.x + dx,
+    y: state.player.position.y + dy,
+  };
+  const targetTile = state.map.tiles[secondTile.y]?.[secondTile.x];
+  const passTile = state.map.tiles[middleTile.y]?.[middleTile.x];
+  if (!targetTile || targetTile.kind === 'wall' || !passTile || passTile.kind === 'wall') return undefined;
+  return enemyAt(state.enemies, secondTile);
 }
 
 function tryMove(state: GameState, dx: number, dy: number, rng: Rng): { state: GameState; consumed: boolean } {
@@ -175,6 +280,14 @@ function tryMove(state: GameState, dx: number, dy: number, rng: Rng): { state: G
     return { state: attackEnemy(nextState, targetEnemy, rng), consumed: true };
   }
 
+  const reachEnemy = spearReachEnemy(nextState, dx, dy);
+  if (reachEnemy) {
+    return {
+      state: appendLog(attackEnemy(nextState, reachEnemy, rng), '古びた槍が一歩先まで届いた。', 'normal'),
+      consumed: true,
+    };
+  }
+
   nextState = {
     ...nextState,
     player: {
@@ -182,7 +295,11 @@ function tryMove(state: GameState, dx: number, dy: number, rng: Rng): { state: G
       position: target,
     },
   };
+  nextState = triggerTrapAt(nextState, rng);
   nextState = pickupItems(nextState, rng);
+  if (samePosition(nextState.player.position, nextState.map.stairs)) {
+    nextState = completeObjectiveIfNeeded(nextState, 'reachStairs');
+  }
   return { state: nextState, consumed: true };
 }
 
@@ -231,6 +348,18 @@ function useItem(state: GameState, instanceId: string): { state: GameState; cons
 
   let nextState = state;
   let shouldConsumeItem = true;
+  if (item.identified === false) {
+    nextState = {
+      ...nextState,
+      player: {
+        ...nextState.player,
+        inventory: nextState.player.inventory.map((inventoryItem) =>
+          inventoryItem.instanceId === instanceId ? { ...inventoryItem, identified: true } : inventoryItem,
+        ),
+      },
+    };
+    nextState = appendLog(nextState, `${definition.name}だった。`, 'good');
+  }
 
   if (definition.id === 'small-herb' || definition.id === 'large-herb') {
     nextState = {
@@ -393,7 +522,7 @@ function unequipItem(state: GameState, slot: 'weapon' | 'armor'): { state: GameS
 function dropItem(state: GameState, instanceId: string): { state: GameState; consumed: boolean } {
   const item = state.player.inventory.find((inventoryItem) => inventoryItem.instanceId === instanceId);
   if (!item) return { state: appendLog(state, '捨てる道具が見当たらない。', 'warn'), consumed: false };
-  const definition = getItemDefinition(item.itemId);
+  const display = getInventoryItemDisplay(item);
   const groundItem: GroundItem = {
     id: `drop-${instanceId}`,
     itemId: item.itemId,
@@ -411,13 +540,15 @@ function dropItem(state: GameState, instanceId: string): { state: GameState; con
       },
     },
   };
-  return { state: appendLog(nextState, `${definition.name}を足元に置いた。`), consumed: true };
+  return { state: appendLog(nextState, `${display.name}を足元に置いた。`), consumed: true };
 }
 
 function tryDescend(state: GameState): { state: GameState; consumed: boolean; skipEnemy: boolean } {
   if (!samePosition(state.player.position, state.map.stairs)) {
     return { state: appendLog(state, 'ここには下り階段がない。', 'warn'), consumed: false, skipEnemy: false };
   }
+
+  state = completeObjectiveIfNeeded(state, 'reachStairs');
 
   if (state.floor + 1 >= MAX_FLOOR) {
     const nextState = {

@@ -854,6 +854,27 @@ dd {
   text-shadow: 1px 1px #000;
 }
 
+.floor-objective {
+  display: flex;
+  min-width: 0;
+  gap: 8px;
+  overflow: hidden;
+  color: #f7d681;
+  font-size: clamp(0.62rem, 2.2vw, 0.78rem);
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.floor-objective span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.objective-complete {
+  color: #89f5a1;
+}
+
 .playfield .dungeon-frame {
   position: absolute;
   inset: 0;
@@ -913,6 +934,38 @@ dd {
   filter: saturate(1.1) brightness(0.95);
 }
 
+.playfield .floor-theme-damp .tile-floor.visible {
+  background:
+    radial-gradient(circle at 20% 50%, rgba(44, 105, 112, 0.58) 0 9%, transparent 10%),
+    radial-gradient(circle at 75% 22%, rgba(84, 127, 98, 0.7) 0 6%, transparent 7%),
+    linear-gradient(135deg, #1e3130 0 25%, #142526 25% 50%, #2c403b 50% 75%, #182929 75%);
+}
+
+.playfield .floor-theme-ember .tile-floor.visible {
+  background:
+    radial-gradient(circle at 22% 28%, rgba(196, 74, 46, 0.62) 0 6%, transparent 7%),
+    radial-gradient(circle at 78% 60%, rgba(99, 55, 38, 0.95) 0 9%, transparent 10%),
+    linear-gradient(135deg, #33211d 0 25%, #201817 25% 50%, #4a2b22 50% 75%, #251916 75%);
+}
+
+.playfield .floor-theme-rust .tile-floor.visible {
+  background:
+    radial-gradient(circle at 24% 20%, rgba(143, 112, 78, 0.68) 0 7%, transparent 8%),
+    radial-gradient(circle at 72% 64%, rgba(82, 72, 63, 0.9) 0 10%, transparent 11%),
+    linear-gradient(135deg, #302b26 0 25%, #201d1a 25% 50%, #463d32 50% 75%, #29231e 75%);
+}
+
+.playfield .floor-theme-shadow .tile-floor.visible {
+  background:
+    radial-gradient(circle at 18% 24%, rgba(85, 73, 118, 0.58) 0 7%, transparent 8%),
+    radial-gradient(circle at 78% 64%, rgba(38, 34, 56, 0.94) 0 10%, transparent 11%),
+    linear-gradient(135deg, #191724 0 25%, #0f1118 25% 50%, #29243a 50% 75%, #12121b 75%);
+}
+
+.playfield .floor-theme-overgrown .tile-wall.visible {
+  filter: saturate(1.28) brightness(1.02);
+}
+
 .playfield .tile-stairs.visible {
   background:
     linear-gradient(90deg, rgba(73, 47, 27, 0.7) 2px, transparent 2px),
@@ -970,6 +1023,13 @@ dd {
   transform: translateY(4%);
 }
 
+.playfield .trap-sprite {
+  width: 82%;
+  height: 82%;
+  opacity: 0.9;
+  transform: translateY(8%);
+}
+
 .playfield .stairs-sprite {
   width: 112%;
   height: 112%;
@@ -1014,6 +1074,10 @@ dd {
 
 .mini-item {
   background: #62d96c;
+}
+
+.mini-trap {
+  background: #f0b84b;
 }
 
 .mini-enemy {

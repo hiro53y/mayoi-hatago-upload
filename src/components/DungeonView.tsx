@@ -1,5 +1,6 @@
 import type { GameState, Position } from '../game/types';
 import { getItemDefinition } from '../game/items';
+import { floorThemeClass, getTrapName } from '../game/floorFeatures';
 import { samePosition } from '../game/pathfinding';
 import DungeonSprite from './DungeonSprite';
 
@@ -18,6 +19,11 @@ function MiniMap({ state }: Props) {
   const cells = [];
   const enemyPositions = new Set(state.enemies.map((enemy) => `${enemy.position.x},${enemy.position.y}`));
   const itemPositions = new Set(state.groundItems.map((item) => `${item.position.x},${item.position.y}`));
+  const trapPositions = new Set(
+    (state.traps ?? [])
+      .filter((trap) => trap.revealed && !trap.triggered)
+      .map((trap) => `${trap.position.x},${trap.position.y}`),
+  );
 
   for (let y = 0; y < state.map.height; y += 1) {
     for (let x = 0; x < state.map.width; x += 1) {
@@ -32,6 +38,7 @@ function MiniMap({ state }: Props) {
         tile.kind === 'wall' ? 'mini-wall' : '',
         isStairs && tile.explored ? 'mini-stairs' : '',
         itemPositions.has(key) && tile.visible ? 'mini-item' : '',
+        trapPositions.has(key) && tile.explored ? 'mini-trap' : '',
         enemyPositions.has(key) && tile.visible ? 'mini-enemy' : '',
         isPlayer ? 'mini-player' : '',
       ]
@@ -67,6 +74,13 @@ export default function DungeonView({ state }: Props) {
       const isPlayer = samePosition(position, state.player.position);
       const enemy = tile?.visible ? state.enemies.find((candidate) => samePosition(candidate.position, position)) : null;
       const item = tile?.visible ? state.groundItems.find((candidate) => samePosition(candidate.position, position)) : null;
+      const trap =
+        tile?.visible || tile?.explored
+          ? (state.traps ?? []).find(
+              (candidate) =>
+                candidate.revealed && !candidate.triggered && samePosition(candidate.position, position),
+            )
+          : null;
       const itemDefinition = item ? getItemDefinition(item.itemId) : null;
       const isStairs = tile?.visible && tile.kind === 'stairs';
       const playerAttackSource = isPlayer
@@ -100,6 +114,8 @@ export default function DungeonView({ state }: Props) {
         enemyAttackSource ? `enemy-strike-source-${enemyActionVariant}` : '',
         item ? 'item-tile' : '',
         itemDefinition ? `item-category-${itemDefinition.category}` : '',
+        trap ? 'trap-tile' : '',
+        trap ? `trap-kind-${trap.type}` : '',
         isStairs ? 'stairs-tile' : '',
       ]
         .filter(Boolean)
@@ -116,6 +132,9 @@ export default function DungeonView({ state }: Props) {
       } else if (item) {
         aria = itemDefinition?.name ?? '道具';
         sprite = <DungeonSprite kind="item" itemCategory={itemDefinition?.category} />;
+      } else if (trap) {
+        aria = getTrapName(trap.type);
+        sprite = <DungeonSprite kind="trap" trapType={trap.type} />;
       } else if (isStairs) {
         aria = '階段';
         sprite = <DungeonSprite kind="stairs" />;
@@ -139,7 +158,7 @@ export default function DungeonView({ state }: Props) {
   }
 
   return (
-    <div className="dungeon-frame">
+    <div className={`dungeon-frame ${floorThemeClass(state.floorTheme?.id)}`}>
       <MiniMap state={state} />
       <div
         className="dungeon-grid"

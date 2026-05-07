@@ -1,4 +1,4 @@
-import { getItemDefinition } from '../game/items';
+import { getInventoryItemDisplay, getItemDefinition } from '../game/items';
 import type { Player } from '../game/types';
 
 interface Props {
@@ -28,6 +28,7 @@ export default function InventoryModal({ player, onUse, onDrop, onEquip, onClose
           <ul className="item-list">
             {player.inventory.map((item) => {
               const definition = getItemDefinition(item.itemId);
+              const display = getInventoryItemDisplay(item);
               const equipped =
                 player.equipment.weaponId === item.instanceId || player.equipment.armorId === item.instanceId;
               const canEquip = definition.category === 'weapon' || definition.category === 'armor';
@@ -35,10 +36,11 @@ export default function InventoryModal({ player, onUse, onDrop, onEquip, onClose
                 <li key={item.instanceId} className={equipped ? 'equipped-item' : ''}>
                   <div className="item-copy">
                     <strong>
-                      {definition.name}
+                      {display.name}
+                      {!display.identified ? '（未識別）' : ''}
                       {equipped ? '（装備中）' : ''}
                     </strong>
-                    <span>{definition.description}</span>
+                    <span>{display.description}</span>
                   </div>
                   <div className="item-actions">
                     <button type="button" onClick={() => (canEquip ? onEquip(item.instanceId) : onUse(item.instanceId))}>

@@ -1,6 +1,7 @@
 import { itemCountForFloor, PLAYER_BASE } from './balance';
 import { LOG_LIMIT, SAVE_VERSION } from './constants';
 import { createEnemiesForFloor } from './enemyAI';
+import { createMiniObjective, createTrapsForFloor, themeForFloor } from './floorFeatures';
 import { createGroundItems } from './items';
 import { generateDungeonMap, updateVisibility } from './mapGenerator';
 import { hashSeed, createRng, randomId } from './rng';
@@ -75,6 +76,7 @@ export function appendVisualEvent(state: GameState, event: Omit<VisualEvent, 'id
 export function enterFloor(state: GameState, floor: number): GameState {
   const floorSeed = hashSeed(`${state.seed}:${floor}`);
   const rng = createRng(state.rngState ^ floorSeed);
+  const floorTheme = themeForFloor(floor, rng);
   const rawMap = generateDungeonMap(floorSeed);
   const player = {
     ...state.player,
@@ -89,25 +91,50 @@ export function enterFloor(state: GameState, floor: number): GameState {
     [rawMap.playerStart, rawMap.stairs, ...enemies.map((enemy) => enemy.position)],
     rng.state,
   );
+  const trapRng = createRng(groundItemResult.rngState);
+  const traps = createTrapsForFloor(
+    rawMap,
+    floor,
+    [
+      rawMap.playerStart,
+      rawMap.stairs,
+      ...enemies.map((enemy) => enemy.position),
+      ...groundItemResult.items.map((item) => item.position),
+    ],
+    trapRng,
+  );
   const visibleMap = updateVisibility(rawMap, player.position, getVisionRadius(player));
 
-  return appendLog(
-    {
-      ...state,
-      floor,
-      rngState: groundItemResult.rngState,
-      map: visibleMap,
-      player,
-      enemies,
-      groundItems: groundItemResult.items,
-      visualEvents: [],
-      runStats: {
-        ...state.runStats,
-        deepestFloor: Math.max(state.runStats.deepestFloor, floor),
-      },
+  let nextState: GameState = {
+    ...state,
+    floor,
+    rngState: trapRng.state,
+    map: visibleMap,
+    player,
+    enemies,
+    groundItems: groundItemResult.items,
+    traps,
+    floorTheme,
+    miniObjective: createMiniObjective(floor),
+    bossWarningSeen: state.bossWarningSeen ?? false,
+    visualEvents: [],
+    runStats: {
+      ...state.runStats,
+      deepestFloor: Math.max(state.runStats.deepestFloor, floor),
     },
-    `${floor}階に降り立った。湿った木札が小さく鳴る。`,
-  );
+  };
+
+  nextState = appendLog(nextState, `${floor}階に降り立った。${floorTheme.description}`);
+  nextState = appendLog(nextState, `小目標：${nextState.miniObjective?.description}。達成で${nextState.miniObjective?.rewardScore}G。`, 'good');
+  if (floor === 9 && !state.bossWarningSeen) {
+    nextState = {
+      ...nextState,
+      bossWarningSeen: true,
+    };
+    nextState = appendLog(nextState, '奥座敷の太鼓が遠く鳴った。次の階に強い気配が満ちている。', 'warn');
+  }
+
+  return nextState;
 }
 
 export function createNewGame(seedInput: string | number = Date.now()): GameState {
@@ -125,6 +152,10 @@ export function createNewGame(seedInput: string | number = Date.now()): GameStat
     player: createInitialPlayer(),
     enemies: [],
     groundItems: [],
+    traps: [],
+    floorTheme: undefined,
+    miniObjective: undefined,
+    bossWarningSeen: false,
     logs: [],
     visualEvents: [],
     runStats: {

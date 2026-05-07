@@ -8,3 +8,4 @@
 | 2026-05-06 | 初期実装はReact Routerを使わず、App内のscreen stateで画面遷移する | Cloudflare Pagesでの直URL404リスクを下げ、MVP範囲をゲーム本体に集中するため | Codex |
 | 2026-05-06 | VitestではなくTypeScript軽量テストランナーを採用する | このWindows環境でVitestの設定読込時に`esbuild spawn EPERM`が発生したため。Vite build自体は成功している | Codex |
 | 2026-05-06 | GitHub公開用には`deliverables/`を含めず、ルートのアプリ本体だけをアップロード対象にする | `deliverables/`は配布用コピーであり、Cloudflare Pagesのビルド対象としては重複・混乱の原因になるため | Codex |
+| 2026-05-08 | 面白さ改善は、罠・未識別・敵/装備の個性・階層テーマ・小目標・ボス前イベントの順で小さく追加する | 既存ゲームループを壊さず、1プレイ内の判断材料と短期目標を増やすため | Codex |

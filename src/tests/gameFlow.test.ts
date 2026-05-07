@@ -1,6 +1,8 @@
 import { performPlayerAction } from '../game/actions';
 import { createNewGame } from '../game/gameState';
+import { createInventoryItem, getInventoryItemDisplay } from '../game/items';
 import { neighbors } from '../game/pathfinding';
+import { createRng } from '../game/rng';
 import type { Enemy, GameState, InventoryItem, Position } from '../game/types';
 import { assert, equal } from './test-utils';
 
@@ -22,6 +24,8 @@ function firstOpenNeighbor(state: GameState): Position {
 
 export function runGameFlowTests(): void {
   let state = createNewGame(4242);
+  assert(state.floorTheme, 'new floors should have a floor theme');
+  assert(state.miniObjective, 'new floors should have a mini objective');
   const start = { ...state.player.position };
   const destination = firstOpenNeighbor(state);
   state.enemies = [];
@@ -81,6 +85,41 @@ export function runGameFlowTests(): void {
   itemState.player.hunger = 10;
   itemState = performPlayerAction(itemState, { type: 'useItem', instanceId: food.instanceId });
   assert(itemState.player.hunger > 10, 'food should restore hunger');
+
+  let objectiveState = createNewGame(5252);
+  objectiveState.enemies = [];
+  objectiveState.miniObjective = {
+    id: 'test-collect',
+    type: 'collect',
+    description: '道具を1個拾う',
+    progress: 0,
+    target: 1,
+    rewardScore: 123,
+    completed: false,
+  };
+  const objectiveTile = firstOpenNeighbor(objectiveState);
+  objectiveState.groundItems = [{ id: 'objective-ground', itemId: 'traveler-knife', position: objectiveTile }];
+  const objectiveScore = objectiveState.player.score;
+  objectiveState = performPlayerAction(
+    objectiveState,
+    commandToward(objectiveState.player.position, objectiveTile),
+  );
+  equal(objectiveState.miniObjective?.completed, true, 'collect mini objective should complete');
+  equal(objectiveState.player.score, objectiveScore + 123, 'mini objective should award score');
+
+  let trapState = createNewGame(5353);
+  trapState.enemies = [];
+  trapState.groundItems = [];
+  const trapTile = firstOpenNeighbor(trapState);
+  trapState.traps = [{ id: 'test-trap', type: 'hunger-floor', position: trapTile, revealed: false }];
+  const hungerBeforeTrap = trapState.player.hunger;
+  trapState = performPlayerAction(trapState, commandToward(trapState.player.position, trapTile));
+  assert(trapState.player.hunger <= hungerBeforeTrap - 11, 'hunger trap should apply in addition to move hunger');
+  assert(trapState.traps?.[0].triggered, 'triggered trap should be marked');
+
+  const unknownItem = createInventoryItem('thunder-tag', createRng(123));
+  equal(unknownItem.identified, false, 'offense item should start unidentified');
+  equal(getInventoryItemDisplay(unknownItem).identified, false, 'unidentified item display should hide its identity');
 
   let stairState = createNewGame(6161);
   stairState.enemies = [];

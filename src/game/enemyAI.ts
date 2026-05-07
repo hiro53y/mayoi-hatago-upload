@@ -1,7 +1,7 @@
 import { ENEMY_DEFINITIONS, enemyCountForFloor } from './balance';
 import { calculateDamage, didHit } from './combat';
-import { getPlayerDefense, getStatusResistance } from './equipment';
-import { appendVisualEvent } from './gameState';
+import { getEquippedArmor, getPlayerDefense, getStatusResistance } from './equipment';
+import { appendLog, appendVisualEvent } from './gameState';
 import { findPath, isWalkable, manhattan, positionKey, samePosition } from './pathfinding';
 import { randomId, type Rng } from './rng';
 import { addOrRefreshStatus } from './statusEffects';
@@ -86,7 +86,9 @@ function enemyAttackPlayer(state: GameState, enemy: Enemy, rng: Rng): GameState 
     return addEnemyLog(nextState, `${enemy.name}の攻撃は外れた。`, 'normal');
   }
 
-  const damage = calculateDamage(enemy.attack, getPlayerDefense(state.player), rng);
+  const armor = getEquippedArmor(state.player);
+  const guardBonus = armor?.itemId === 'iron-umbrella' ? 1 : 0;
+  const damage = Math.max(1, calculateDamage(enemy.attack, getPlayerDefense(state.player), rng) - guardBonus);
   let player = { ...state.player, hp: Math.max(0, state.player.hp - damage) };
   nextState = {
     ...state,
@@ -138,18 +140,7 @@ function enemyAttackPlayer(state: GameState, enemy: Enemy, rng: Rng): GameState 
 }
 
 function addEnemyLog(state: GameState, text: string, tone: 'normal' | 'good' | 'warn' | 'bad' = 'normal'): GameState {
-  return {
-    ...state,
-    logs: [
-      ...state.logs,
-      {
-        id: state.logs.length > 0 ? state.logs[state.logs.length - 1].id + 1 : 1,
-        turn: state.turn,
-        text,
-        tone,
-      },
-    ],
-  };
+  return appendLog(state, text, tone);
 }
 
 function blockedPositions(enemies: Enemy[], selfId: string, playerPosition: Position): Set<string> {

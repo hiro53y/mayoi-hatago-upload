@@ -18,6 +18,11 @@
 - 壁衝突は移動、ターン、満腹度、敵行動を発生させない仕様を回帰テストで固定。
 - 装備変更/解除は確認・管理操作として満腹度を消費しない仕様に変更。
 - スマホ縦画面でプレイ画面と操作盤が上下に離れすぎないよう、ゲーム画面のグリッドを `auto auto` に変更。
+- 各階に `floorTheme` と `miniObjective` を追加し、HUDに階層テーマと小目標の進捗を表示。
+- 2階以降に `絡み泥`、`腹減らし床`、`呼び鈴床` の罠を配置し、発見済み罠はマップ/ミニマップに表示。
+- 回復系の一部、札、補助道具を未識別状態で拾うように変更し、使用時に正体をログ表示。
+- 装備特性を追加。短刀は命中補正、太刀は獣系に有利、槍は1マス先まで攻撃、笠は罠発見、傘は被ダメージ軽減。
+- 9階到達時に10階直前のボス前イベントログを表示。
 - オリジナル2Dスプライトを追加。
 - 接触攻撃、敵攻撃、被弾のモーションを強化。
 - 攻撃時に `VisualEvent` を発行し、斬撃とヒット表示を確実に出すようにした。
@@ -27,6 +32,9 @@
 
 - `npm run test`: 成功。
 - `npm run build`: 成功。
+- 面白さ改善後の `npm run test`: 成功（5 test groups passed）。
+- 面白さ改善後の `npm run build`: 成功。
+- `dist` 簡易HTTP配信チェック: HTTP 200、`id="root"` を確認。
 - `dist` の簡易静的配信チェック: `index.html`、manifest、Service Worker、PWAアイコン取得に成功。
 - UI改修後の静的配信チェック: CSSに `playfield`、`mini-map`、`pixel-sprite` が含まれることを確認。
 - ログ/満腹度/UI調整後の `npm run test` と `npm run build`: 成功。
@@ -37,3 +45,4 @@
 - `node_modules/`、`dist/`、`.test-build/` はアップロード不要。`.gitignore` で除外済み。
 - 手動アップロードする場合は、上記の生成フォルダをドラッグしない。
 - `vite preview` はこのローカルWindows環境で `esbuild spawn EPERM` になる場合があるが、`npm run build` は成功している。
+- 今回も `vite preview` は `spawn EPERM` で起動不可。代替として `dist` をNode簡易HTTPサーバーで配信確認済み。

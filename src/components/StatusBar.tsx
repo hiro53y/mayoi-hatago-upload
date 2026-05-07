@@ -54,6 +54,14 @@ export default function StatusBar({ state }: Props) {
           ))}
         </div>
       )}
+      <div className="floor-objective" aria-label="階層情報">
+        {state.floorTheme ? <span>{state.floorTheme.name}</span> : null}
+        {state.miniObjective ? (
+          <span className={state.miniObjective.completed ? 'objective-complete' : ''}>
+            目標 {state.miniObjective.description} {state.miniObjective.progress}/{state.miniObjective.target}
+          </span>
+        ) : null}
+      </div>
     </header>
   );
 }

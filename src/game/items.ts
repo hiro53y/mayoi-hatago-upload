@@ -115,9 +115,9 @@ export const ITEM_DEFINITIONS: ItemDefinition[] = [
     id: 'traveler-knife',
     name: '旅人の短刀',
     category: 'weapon',
-    description: '攻撃力+2。',
+    description: '攻撃力+2、命中率が少し上がる。',
     attackBonus: 2,
-    hitModifier: 0,
+    hitModifier: 0.05,
     slot: 'weapon',
     rarity: 8,
     minFloor: 1,
@@ -126,7 +126,7 @@ export const ITEM_DEFINITIONS: ItemDefinition[] = [
     id: 'yamamori-sword',
     name: '山守の太刀',
     category: 'weapon',
-    description: '攻撃力+4。',
+    description: '攻撃力+4。獣じみた敵に強い。',
     attackBonus: 4,
     hitModifier: 0.02,
     slot: 'weapon',
@@ -137,7 +137,7 @@ export const ITEM_DEFINITIONS: ItemDefinition[] = [
     id: 'old-spear',
     name: '古びた槍',
     category: 'weapon',
-    description: '攻撃力+6、命中率が少し下がる。',
+    description: '攻撃力+6、1マス先まで届くが命中率が少し下がる。',
     attackBonus: 6,
     hitModifier: -0.08,
     slot: 'weapon',
@@ -148,7 +148,7 @@ export const ITEM_DEFINITIONS: ItemDefinition[] = [
     id: 'bamboo-hat',
     name: '竹編みの笠',
     category: 'armor',
-    description: '防御力+1。',
+    description: '防御力+1。まれに罠の気配に気づく。',
     defenseBonus: 1,
     slot: 'armor',
     rarity: 8,
@@ -158,7 +158,7 @@ export const ITEM_DEFINITIONS: ItemDefinition[] = [
     id: 'iron-umbrella',
     name: '鉄張りの傘',
     category: 'armor',
-    description: '防御力+3。',
+    description: '防御力+3。受けるダメージをさらに少し抑える。',
     defenseBonus: 3,
     slot: 'armor',
     rarity: 5,
@@ -183,8 +183,38 @@ export function getItemDefinition(itemId: string): ItemDefinition {
   return definition;
 }
 
+function shouldStartUnidentified(definition: ItemDefinition): boolean {
+  if (definition.category === 'healing') return definition.id !== 'small-herb';
+  return definition.category === 'offense' || definition.category === 'support';
+}
+
+function unidentifiedName(category: ItemDefinition['category']): string {
+  if (category === 'healing') return '名もない草';
+  if (category === 'offense') return '古びた札';
+  if (category === 'support') return '封じた小物';
+  return '正体不明の道具';
+}
+
+export function getInventoryItemDisplay(item: InventoryItem): { name: string; description: string; identified: boolean } {
+  const definition = getItemDefinition(item.itemId);
+  const identified = item.identified !== false;
+  if (identified) {
+    return {
+      name: definition.name,
+      description: definition.description,
+      identified,
+    };
+  }
+
+  return {
+    name: unidentifiedName(definition.category),
+    description: '使うまで正体が分からない。拾った記録には残る。',
+    identified,
+  };
+}
+
 export function getItemLabel(item: InventoryItem): string {
-  return getItemDefinition(item.itemId).name;
+  return getInventoryItemDisplay(item).name;
 }
 
 export function isInventoryFull(inventory: InventoryItem[]): boolean {
@@ -203,9 +233,11 @@ function chooseItemDefinition(floor: number, rng: Rng): ItemDefinition {
 }
 
 export function createInventoryItem(itemId: string, rng: Rng): InventoryItem {
+  const definition = getItemDefinition(itemId);
   return {
     instanceId: randomId('item', rng),
     itemId,
+    identified: !shouldStartUnidentified(definition),
   };
 }
 

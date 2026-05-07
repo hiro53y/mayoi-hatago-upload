@@ -1,9 +1,10 @@
-import type { ItemCategory } from '../game/types';
+import type { ItemCategory, TrapType } from '../game/types';
 
 interface Props {
-  kind: 'player' | 'enemy' | 'item' | 'stairs';
+  kind: 'player' | 'enemy' | 'item' | 'stairs' | 'trap';
   enemyKind?: string;
   itemCategory?: ItemCategory;
+  trapType?: TrapType;
 }
 
 type Pixel = readonly [x: number, y: number, width: number, height: number, color: string];
@@ -191,9 +192,36 @@ const STAIRS: Pixel[] = [
   [9, 20, 17, 1, '#f1d389'],
 ];
 
-export default function DungeonSprite({ kind, enemyKind, itemCategory }: Props) {
+const TRAP_MUD: Pixel[] = [
+  [8, 18, 16, 5, '#4f3a2c'],
+  [10, 15, 12, 3, '#70543d'],
+  [12, 12, 8, 3, '#2b2019'],
+  [7, 23, 18, 2, '#201714'],
+  [11, 17, 3, 2, '#9a7b55'],
+  [19, 18, 3, 2, '#9a7b55'],
+];
+
+const TRAP_HUNGER: Pixel[] = [
+  [9, 10, 14, 12, '#6d4c36'],
+  [11, 8, 10, 3, '#d3a850'],
+  [12, 13, 8, 2, '#231712'],
+  [13, 17, 6, 2, '#231712'],
+  [8, 22, 16, 3, '#2a1e18'],
+];
+
+const TRAP_BELL: Pixel[] = [
+  [14, 5, 4, 4, '#f2c85d'],
+  [11, 9, 10, 11, '#b48234'],
+  [9, 20, 14, 3, '#684125'],
+  [15, 22, 2, 4, '#f2c85d'],
+  [7, 12, 2, 7, '#78a7b6'],
+  [23, 12, 2, 7, '#78a7b6'],
+];
+
+export default function DungeonSprite({ kind, enemyKind, itemCategory, trapType }: Props) {
   if (kind === 'player') return <PixelSvg className="player-sprite pixel-sprite" data={PLAYER} />;
   if (kind === 'stairs') return <PixelSvg className="stairs-sprite pixel-sprite" data={STAIRS} />;
+  if (kind === 'trap') return <PixelSvg className="trap-sprite pixel-sprite" data={trapPixels(trapType ?? 'slow-mud')} />;
   if (kind === 'item') return <PixelSvg className="item-sprite pixel-sprite" data={itemPixels(itemCategory ?? 'support')} />;
   return <PixelSvg className="enemy-sprite pixel-sprite" data={enemyPixels(enemyKind ?? 'mayoi-tanuki')} />;
 }
@@ -214,4 +242,10 @@ function itemPixels(category: ItemCategory): Pixel[] {
   if (category === 'armor') return ITEM_ARMOR;
   if (category === 'offense') return BOLT;
   return BELL;
+}
+
+function trapPixels(type: TrapType): Pixel[] {
+  if (type === 'hunger-floor') return TRAP_HUNGER;
+  if (type === 'snare-bell') return TRAP_BELL;
+  return TRAP_MUD;
 }

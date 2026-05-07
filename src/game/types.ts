@@ -4,6 +4,12 @@ export type Direction = 'up' | 'down' | 'left' | 'right';
 
 export type StatusEffectType = 'poison' | 'blind' | 'slow' | 'swift' | 'vision';
 
+export type TrapType = 'slow-mud' | 'hunger-floor' | 'snare-bell';
+
+export type FloorThemeId = 'standard' | 'overgrown' | 'damp' | 'ember' | 'rust' | 'shadow';
+
+export type MiniObjectiveType = 'defeat' | 'collect' | 'reachStairs';
+
 export interface Position {
   x: number;
   y: number;
@@ -40,6 +46,7 @@ export interface StatusEffect {
 export interface InventoryItem {
   instanceId: string;
   itemId: string;
+  identified?: boolean;
 }
 
 export interface EquipmentSlots {
@@ -119,6 +126,30 @@ export interface GroundItem {
   position: Position;
 }
 
+export interface Trap {
+  id: string;
+  type: TrapType;
+  position: Position;
+  revealed: boolean;
+  triggered?: boolean;
+}
+
+export interface FloorTheme {
+  id: FloorThemeId;
+  name: string;
+  description: string;
+}
+
+export interface MiniObjective {
+  id: string;
+  type: MiniObjectiveType;
+  description: string;
+  progress: number;
+  target: number;
+  rewardScore: number;
+  completed: boolean;
+}
+
 export interface LogEntry {
   id: number;
   turn: number;
@@ -171,6 +202,10 @@ export interface GameState {
   player: Player;
   enemies: Enemy[];
   groundItems: GroundItem[];
+  traps?: Trap[];
+  floorTheme?: FloorTheme;
+  miniObjective?: MiniObjective;
+  bossWarningSeen?: boolean;
   logs: LogEntry[];
   visualEvents?: VisualEvent[];
   runStats: RunStats;
