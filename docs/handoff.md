@@ -30,6 +30,10 @@
 - 接触攻撃時の `VisualEvent` 発火をテストに追加。
 - GPT image 2.0で生成した4 x 4スプライトシートを `public/assets/sprites/` に保存し、クロマキー除去後に16個の透過PNGへ切り出した。
 - `DungeonSprite.tsx` をSVG矩形描画からPNG参照へ変更し、操作キャラクター上下の黒線が出ない表示に変更。
+- GPT image 2.0で操作キャラクターの上下左右4方向スプライトを追加生成し、`player-down/right/up/left.png` として保存。
+- 操作キャラクターは `state.player.facing` に応じて画像を切り替えるよう変更。
+- 敵キャラクターはプレイヤーが敵の右側にいるとき `enemy-facing-right` で左右反転するよう変更。
+- プレイヤー下側の黒線対策として、下端に不透明ピクセルのない新規透過PNGへ差し替え、プレイヤーだけ下方向ドロップシャドウを使わないCSSへ変更。
 - BGM hook `src/game/bgm.ts` を追加し、タイトル画面と各階層でmp3が存在する場合だけループ再生するようにした。
 - BGM配置手順を `README.md` と `public/assets/bgm/README.md` に追記。
 - スマホ縦画面でゲーム全体が上に詰まりすぎないよう、`.game-screen` の配置を中央寄せに調整。
@@ -46,6 +50,7 @@
 - UI改修後の静的配信チェック: CSSに `playfield`、`mini-map`、`art-sprite` が含まれることを確認。
 - 今回改修後の `npm run test`: 成功（5 test groups passed）。
 - 今回改修後の `npx tsc -b`: 成功。
+- 4方向プレイヤー画像の透過確認: `player-down/right/up/left.png` の左上alphaが0、下端8行に不透明ピクセルなし。
 - 代表スプライトの透過確認: `player.png`、`enemy-tanuki.png`、`item-food.png`、`stairs.png`、`trap-set.png` の左上alphaが0。
 - `npm run build` と `npm run dev` はこのローカルWindows環境で既知の `esbuild spawn EPERM` によりVite設定ロード時に失敗。
 - ログ/満腹度/UI調整後の `npm run test` と `npm run build`: 成功。

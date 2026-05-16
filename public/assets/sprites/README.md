@@ -4,6 +4,13 @@
 `spritesheet-transparent.png` はクロマキー背景を透過した中間画像です。
 ゲーム本体は個別に切り出したPNGを `src/components/DungeonSprite.tsx` から参照します。
 
+`generated-player-directions-source.png` はGPT image 2.0で追加生成した操作キャラクター4方向スプライトです。
+`player-down.png`、`player-right.png`、`player-up.png`、`player-left.png` をゲーム内の向きに応じて使います。
+
 生成プロンプト要約:
 
 > オリジナルの和風ファンタジーローグライク向け、4 x 4の手描き2Dスプライトシート。旅人、階段、薬草、食料、敵、武器、防具、罠など。既存作品の固有デザインはコピーせず、クラシックな日本製ダンジョンRPGの雰囲気だけを参考にする。背景は透過処理用の単色クロマキー。
+
+追加生成プロンプト要約:
+
+> 同じ旅人キャラクターの下/右/上/左向き4方向手描き2Dスプライト。既存作品の固有デザインはコピーせず、単色クロマキー背景、影や水平線なし。

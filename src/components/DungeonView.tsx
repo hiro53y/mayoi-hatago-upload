@@ -125,10 +125,16 @@ export default function DungeonView({ state }: Props) {
 
       if (isPlayer) {
         aria = '旅人';
-        sprite = <DungeonSprite kind="player" />;
+        sprite = <DungeonSprite kind="player" playerFacing={state.player.facing} />;
       } else if (enemy) {
         aria = enemy.name;
-        sprite = <DungeonSprite kind="enemy" enemyKind={enemy.kindId} />;
+        sprite = (
+          <DungeonSprite
+            kind="enemy"
+            enemyKind={enemy.kindId}
+            enemyFacingRight={state.player.position.x > enemy.position.x}
+          />
+        );
       } else if (item) {
         aria = itemDefinition?.name ?? '道具';
         sprite = <DungeonSprite kind="item" itemCategory={itemDefinition?.category} />;

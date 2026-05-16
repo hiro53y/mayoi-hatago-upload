@@ -17,6 +17,8 @@
 - [x] 静的配信で `playfield`、`mini-map`、`art-sprite` のCSS反映を確認
 - [x] GPT image 2.0生成PNGスプライト16点が `public/assets/sprites/` に存在することを確認
 - [x] 代表スプライトの左上ピクセルが透過で、背景の黒線・クロマキーが残っていないことを確認
+- [x] 操作キャラクター4方向PNG（`player-down/right/up/left.png`）の左上ピクセルが透過で、下端に不透明ピクセルがないことを確認
+- [x] `DungeonSprite.tsx` がプレイヤー向き別画像と敵の左右反転クラスを参照することを確認
 - [x] `public/assets/bgm/README.md` にタイトル/1〜10階のmp3命名規則があることを確認
 - [x] `npm run test` 成功（5 test groups passed）
 - [x] `npx tsc -b` 成功

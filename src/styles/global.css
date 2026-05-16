@@ -337,6 +337,7 @@ dd {
 }
 
 .game-sprite {
+  --sprite-scale-x: 1;
   position: relative;
   z-index: 2;
   display: block;
@@ -383,6 +384,10 @@ dd {
 .enemy-sprite {
   width: 104%;
   height: 104%;
+}
+
+.enemy-facing-right {
+  --sprite-scale-x: -1;
 }
 
 .item-sprite,
@@ -765,7 +770,7 @@ dd {
 .playfield::after {
   position: absolute;
   inset: 0;
-  z-index: 4;
+  z-index: 1;
   pointer-events: none;
   content: "";
   background:
@@ -881,6 +886,7 @@ dd {
 .playfield .dungeon-frame {
   position: absolute;
   inset: 0;
+  z-index: 0;
   width: 100%;
   height: 100%;
   padding: 0;
@@ -1008,11 +1014,15 @@ dd {
 .playfield .art-sprite {
   width: 132%;
   height: 132%;
-  transform: translateY(-10%);
+  transform: translateY(-10%) scaleX(var(--sprite-scale-x));
   image-rendering: auto;
   filter:
     drop-shadow(0 5px 5px rgba(0, 0, 0, 0.58))
     drop-shadow(0 0 1px rgba(255, 255, 255, 0.2));
+}
+
+.playfield .player-sprite {
+  filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.58));
 }
 
 .playfield .enemy-sprite {

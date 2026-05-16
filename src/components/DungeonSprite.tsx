@@ -1,10 +1,12 @@
-import type { ItemCategory, TrapType } from '../game/types';
+import type { Direction, ItemCategory, TrapType } from '../game/types';
 
 interface Props {
   kind: 'player' | 'enemy' | 'item' | 'stairs' | 'trap';
   enemyKind?: string;
   itemCategory?: ItemCategory;
   trapType?: TrapType;
+  playerFacing?: Direction;
+  enemyFacingRight?: boolean;
 }
 
 const SPRITE_BASE = '/assets/sprites/';
@@ -34,13 +36,20 @@ const TRAP_SPRITES: Record<TrapType, string> = {
   'snare-bell': 'trap-set.png',
 };
 
+const PLAYER_SPRITES: Record<Direction, string> = {
+  up: 'player-up.png',
+  down: 'player-down.png',
+  left: 'player-left.png',
+  right: 'player-right.png',
+};
+
 function spriteSrc(fileName: string) {
   return `${SPRITE_BASE}${fileName}`;
 }
 
-export default function DungeonSprite({ kind, enemyKind, itemCategory, trapType }: Props) {
+export default function DungeonSprite({ kind, enemyKind, itemCategory, trapType, playerFacing, enemyFacingRight }: Props) {
   let className = 'game-sprite';
-  let fileName = 'player.png';
+  let fileName = PLAYER_SPRITES[playerFacing ?? 'down'];
 
   if (kind === 'player') {
     className += ' player-sprite art-sprite';
@@ -55,6 +64,7 @@ export default function DungeonSprite({ kind, enemyKind, itemCategory, trapType 
     fileName = ITEM_SPRITES[itemCategory ?? 'support'];
   } else {
     className += ' enemy-sprite art-sprite';
+    if (enemyFacingRight) className += ' enemy-facing-right';
     fileName = ENEMY_SPRITES[enemyKind ?? 'mayoi-tanuki'] ?? ENEMY_SPRITES['mayoi-tanuki'];
   }
 
