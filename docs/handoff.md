@@ -3,7 +3,8 @@
 ## 現在の状況
 
 - GitHubアップロード対象は `deliverables/mayoi-hatago-upload`。
-- キャラクター、敵、道具、階段は `src/components/DungeonSprite.tsx` の軽量SVGスプライトで表示する。
+- キャラクター、敵、道具、階段は `public/assets/sprites/` の透過PNGを `src/components/DungeonSprite.tsx` から表示する。
+- BGMは `public/assets/bgm/` に `title.mp3`、`floor-01.mp3`〜`floor-10.mp3` を置くと再生される。
 - 攻撃演出は `GameState.visualEvents` を使い、ログ文字列推測に依存しない。
 - PWA用に `public/manifest.webmanifest`、`public/sw.js`、`public/icons/` を含めている。
 
@@ -27,6 +28,12 @@
 - 接触攻撃、敵攻撃、被弾のモーションを強化。
 - 攻撃時に `VisualEvent` を発行し、斬撃とヒット表示を確実に出すようにした。
 - 接触攻撃時の `VisualEvent` 発火をテストに追加。
+- GPT image 2.0で生成した4 x 4スプライトシートを `public/assets/sprites/` に保存し、クロマキー除去後に16個の透過PNGへ切り出した。
+- `DungeonSprite.tsx` をSVG矩形描画からPNG参照へ変更し、操作キャラクター上下の黒線が出ない表示に変更。
+- BGM hook `src/game/bgm.ts` を追加し、タイトル画面と各階層でmp3が存在する場合だけループ再生するようにした。
+- BGM配置手順を `README.md` と `public/assets/bgm/README.md` に追記。
+- スマホ縦画面でゲーム全体が上に詰まりすぎないよう、`.game-screen` の配置を中央寄せに調整。
+- Service Workerキャッシュ名を `fushigina-dungeon-modoki-v2` に更新。
 
 ## 検証
 
@@ -36,7 +43,11 @@
 - 面白さ改善後の `npm run build`: 成功。
 - `dist` 簡易HTTP配信チェック: HTTP 200、`id="root"` を確認。
 - `dist` の簡易静的配信チェック: `index.html`、manifest、Service Worker、PWAアイコン取得に成功。
-- UI改修後の静的配信チェック: CSSに `playfield`、`mini-map`、`pixel-sprite` が含まれることを確認。
+- UI改修後の静的配信チェック: CSSに `playfield`、`mini-map`、`art-sprite` が含まれることを確認。
+- 今回改修後の `npm run test`: 成功（5 test groups passed）。
+- 今回改修後の `npx tsc -b`: 成功。
+- 代表スプライトの透過確認: `player.png`、`enemy-tanuki.png`、`item-food.png`、`stairs.png`、`trap-set.png` の左上alphaが0。
+- `npm run build` と `npm run dev` はこのローカルWindows環境で既知の `esbuild spawn EPERM` によりVite設定ロード時に失敗。
 - ログ/満腹度/UI調整後の `npm run test` と `npm run build`: 成功。
 - CSS静的チェック: `log-repeat`、`grid-template-rows:auto auto`、低身長画面向けレイアウト、ログ高さ制限の反映を確認。
 
@@ -45,4 +56,5 @@
 - `node_modules/`、`dist/`、`.test-build/` はアップロード不要。`.gitignore` で除外済み。
 - 手動アップロードする場合は、上記の生成フォルダをドラッグしない。
 - `vite preview` はこのローカルWindows環境で `esbuild spawn EPERM` になる場合があるが、`npm run build` は成功している。
-- 今回も `vite preview` は `spawn EPERM` で起動不可。代替として `dist` をNode簡易HTTPサーバーで配信確認済み。
+- 今回も Vite系コマンドは `spawn EPERM` で起動不可。Cloudflare Pages側では通常の `npm run build` 設定を維持。
+- BGM mp3はまだ未配置。ユーザーが `public/assets/bgm/` に指定ファイル名で追加する必要がある。

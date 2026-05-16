@@ -342,9 +342,12 @@ dd {
   display: block;
   width: 96%;
   height: 96%;
+  object-fit: contain;
   overflow: visible;
   transform-origin: 50% 82%;
   filter: drop-shadow(0 3px 2px rgba(0, 0, 0, 0.4));
+  user-select: none;
+  pointer-events: none;
 }
 
 .player-sprite {
@@ -733,8 +736,8 @@ dd {
 }
 
 .game-screen {
-  grid-template-rows: auto auto;
-  align-content: start;
+  grid-template-rows: minmax(0, auto) auto;
+  align-content: center;
   gap: clamp(8px, 1.4svh, 14px);
   overflow-y: auto;
   background:
@@ -1002,13 +1005,13 @@ dd {
   box-shadow: none;
 }
 
-.playfield .pixel-sprite {
+.playfield .art-sprite {
   width: 132%;
   height: 132%;
   transform: translateY(-10%);
-  image-rendering: pixelated;
+  image-rendering: auto;
   filter:
-    drop-shadow(2px 2px 0 rgba(0, 0, 0, 0.62))
+    drop-shadow(0 5px 5px rgba(0, 0, 0, 0.58))
     drop-shadow(0 0 1px rgba(255, 255, 255, 0.2));
 }
 

@@ -12,6 +12,7 @@ import {
   updateRecordsFromState,
 } from './game/save';
 import type { GameResult, GameState, Records } from './game/types';
+import { useBgm } from './game/bgm';
 import TitleScreen from './components/TitleScreen';
 import GameScreen from './components/GameScreen';
 import ResultScreen from './components/ResultScreen';
@@ -27,6 +28,14 @@ export default function App() {
   const [records, setRecords] = useState<Records>(() => loadRecords());
   const [lastResult, setLastResult] = useState<GameResult | null>(initialProgress?.result ?? null);
   const [hasSave, setHasSave] = useState(Boolean(initialProgress));
+
+  useBgm(
+    screen === 'title'
+      ? { screen: 'title' }
+      : screen === 'game' && gameState
+        ? { screen: 'game', floor: gameState.floor }
+        : { screen: 'none' },
+  );
 
   const persistRecords = (nextRecords: Records) => {
     setRecords(nextRecords);

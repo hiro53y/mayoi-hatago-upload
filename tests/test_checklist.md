@@ -14,7 +14,13 @@
 - [x] タイトル変更後に `npm run test` と `npm run build` が成功
 - [x] 静的配信でHTMLタイトル、manifest名、Service Workerキャッシュ名の更新を確認
 - [x] UI改修後に `npm run test` と `npm run build` が成功
-- [x] 静的配信で `playfield`、`mini-map`、`pixel-sprite` のCSS反映を確認
+- [x] 静的配信で `playfield`、`mini-map`、`art-sprite` のCSS反映を確認
+- [x] GPT image 2.0生成PNGスプライト16点が `public/assets/sprites/` に存在することを確認
+- [x] 代表スプライトの左上ピクセルが透過で、背景の黒線・クロマキーが残っていないことを確認
+- [x] `public/assets/bgm/README.md` にタイトル/1〜10階のmp3命名規則があることを確認
+- [x] `npm run test` 成功（5 test groups passed）
+- [x] `npx tsc -b` 成功
+- [x] BGM hook、PNGスプライト参照、Service Worker v2の静的反映を `rg` で確認
 - [x] 壁に連続でぶつかっても満腹度、HP、ターンが変わらないことをテスト
 - [x] 壁衝突ログが `count` で圧縮されることをテスト
 - [x] 通常移動、攻撃、待機、階段で満腹度が1減ることをテスト
@@ -26,3 +32,4 @@
 - [ ] Cloudflare Pages公開URLをAndroid Chromeで開き、「アプリをインストール」が表示されること
 - [ ] 360px幅相当のスマホで操作ボタンが重ならないこと
 - [ ] 実機タップで斬撃、敵攻撃、被弾が視認できること
+- [ ] 実際のmp3配置後、タイトル/各階層でBGMが切り替わること

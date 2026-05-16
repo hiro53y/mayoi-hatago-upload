@@ -1,6 +1,6 @@
 # 仕様メモ
 
-検証時点: 2026-05-06 JST
+検証時点: 2026-05-16 JST
 
 ## 目的
 
@@ -19,6 +19,8 @@
 - localStorageで進行データと記録データを保存する
 - `npm run test` と `npm run build` が成功する
 - Cloudflare Pages の設定値を README に明記する
+- キャラクター、敵、アイテム、階段は `public/assets/sprites/` 内の画像アセットで表示する
+- タイトル画面と1〜10階のBGMは `public/assets/bgm/` 内のmp3ファイル名で差し替え可能にする
 
 ## 技術スタック
 
@@ -28,6 +30,8 @@
 | 言語 | TypeScript |
 | ビルド | Vite |
 | 描画 | CSS Grid |
+| 画像 | `public/assets/sprites/` のPNG |
+| BGM | `public/assets/bgm/` のmp3 |
 | 保存 | localStorage |
 | テスト | TypeScript軽量テストランナー |
 | 公開 | Cloudflare Pages |
@@ -39,6 +43,8 @@
 | マップ | 24 x 24、矩形部屋と通路、階段到達保証 |
 | 視界 | 基本5マス、探索済みは暗く表示 |
 | 操作 | スマホ十字キー、PC矢印/WASD対応 |
+| 表示 | 11 x 11 のプレイヤー中心ビュー、透過PNGスプライト表示 |
+| BGM | `title.mp3`、`floor-01.mp3`〜`floor-10.mp3` が存在する場合だけループ再生 |
 | 戦闘 | 接触攻撃、命中率、乱数ダメージ |
 | 敵 | 7種類、階層で出現解禁、追跡AIと特殊攻撃 |
 | アイテム | 回復、食料、攻撃、補助、武器、防具 |
