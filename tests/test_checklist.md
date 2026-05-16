@@ -21,6 +21,9 @@
 - [x] `DungeonSprite.tsx` がプレイヤー向き別画像と敵の左右反転クラスを参照することを確認
 - [x] 変更前の低頭身キャラクター参照で再生成した4方向PNGへ差し替え
 - [x] 黒い横線の原因になる `.playfield::after` スキャンラインオーバーレイを無効化
+- [x] プレイヤータイルを `isolation:isolate` + `overflow:hidden` にし、隣接する黒いマップ行がスプライト透過部分へ透けないようにした
+- [x] プレイヤースプライトURLに `?v=20260516-linefix` を付け、スマホの古いPWAキャッシュを回避
+- [x] Service Workerを `fushigina-dungeon-modoki-v4` に更新し、`/assets/sprites/` をnetwork-firstへ変更
 - [x] 攻撃ヒット時のVisualEventに `damage` が入り、ダメージ表示に使えることをテスト
 - [x] 斬撃SE用 `playSlashHitSe()` を追加し、プレイヤー攻撃ヒット時に呼ばれることを型チェック
 - [x] `public/assets/bgm/README.md` にタイトル/1〜10階のmp3命名規則があることを確認

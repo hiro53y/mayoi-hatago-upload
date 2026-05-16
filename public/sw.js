@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'fushigina-dungeon-modoki-v2';
+const CACHE_VERSION = 'fushigina-dungeon-modoki-v4';
 const APP_SHELL = ['/', '/index.html', '/manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {
@@ -37,6 +37,15 @@ self.addEventListener('fetch', (event) => {
 
   event.respondWith(
     caches.match(event.request).then((cached) => {
+      if (event.request.url.includes('/assets/sprites/')) {
+        return fetch(event.request).then((response) => {
+          if (response.ok) {
+            const copy = response.clone();
+            caches.open(CACHE_VERSION).then((cache) => cache.put(event.request, copy));
+          }
+          return response;
+        }).catch(() => cached);
+      }
       if (cached) return cached;
       return fetch(event.request).then((response) => {
         if (response.ok) {

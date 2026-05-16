@@ -10,6 +10,7 @@ interface Props {
 }
 
 const SPRITE_BASE = '/assets/sprites/';
+const SPRITE_VERSION = '20260516-linefix';
 
 const ENEMY_SPRITES: Record<string, string> = {
   'mayoi-tanuki': 'enemy-tanuki.png',
@@ -44,7 +45,7 @@ const PLAYER_SPRITES: Record<Direction, string> = {
 };
 
 function spriteSrc(fileName: string) {
-  return `${SPRITE_BASE}${fileName}`;
+  return `${SPRITE_BASE}${fileName}?v=${SPRITE_VERSION}`;
 }
 
 export default function DungeonSprite({ kind, enemyKind, itemCategory, trapType, playerFacing, enemyFacingRight }: Props) {

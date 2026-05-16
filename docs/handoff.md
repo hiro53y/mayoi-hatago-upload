@@ -38,6 +38,9 @@
 - スプライト上に黒い横線が重なる原因になっていた `.playfield::after` のスキャンライン風オーバーレイを無効化した。
 - `VisualEvent.damage` を追加し、攻撃ヒット時に火花エフェクトとダメージ数値を表示するようにした。
 - `src/game/sound.ts` を追加し、プレイヤー攻撃ヒット時に短い斬撃SEをWeb Audioで鳴らすようにした。
+- 黒線再発対策として、プレイヤータイルを独立レイヤー化し、`overflow:hidden` で周囲の黒いマップ行がスプライト透過部分へ透けないようにした。
+- 黒線再発対策として、プレイヤースプライトの下方向ドロップシャドウを完全に外し、上下方向にはみ出す量を抑えた。
+- スマホPWA側に古いスプライト/CSSが残る可能性を潰すため、スプライトURLに `?v=20260516-linefix` を付け、Service Workerを `fushigina-dungeon-modoki-v4` に更新。`/assets/sprites/` はnetwork-firstに変更。
 - BGM hook `src/game/bgm.ts` を追加し、タイトル画面と各階層でmp3が存在する場合だけループ再生するようにした。
 - BGM配置手順を `README.md` と `public/assets/bgm/README.md` に追記。
 - スマホ縦画面でゲーム全体が上に詰まりすぎないよう、`.game-screen` の配置を中央寄せに調整。
@@ -58,6 +61,8 @@
 - 低頭身スプライト再生成後の `npm run test`: 成功（5 test groups passed）。
 - 低頭身スプライト再生成後の `npx tsc -b`: 成功。
 - 再生成4方向プレイヤー画像の透過確認: `player-down/right/up/left.png` の左上alphaが0、下端10行に不透明ピクセルなし。
+- 黒線再発対策後の `npm run test`: 成功（5 test groups passed）。
+- 黒線再発対策後の `npx tsc -b`: 成功。
 - 代表スプライトの透過確認: `player.png`、`enemy-tanuki.png`、`item-food.png`、`stairs.png`、`trap-set.png` の左上alphaが0。
 - `npm run build` と `npm run dev` はこのローカルWindows環境で既知の `esbuild spawn EPERM` によりVite設定ロード時に失敗。
 - ログ/満腹度/UI調整後の `npm run test` と `npm run build`: 成功。

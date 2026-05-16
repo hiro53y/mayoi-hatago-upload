@@ -346,7 +346,7 @@ dd {
   object-fit: contain;
   overflow: visible;
   transform-origin: 50% 82%;
-  filter: drop-shadow(0 3px 2px rgba(0, 0, 0, 0.4));
+  filter: none;
   user-select: none;
   pointer-events: none;
 }
@@ -1022,6 +1022,19 @@ dd {
 }
 
 .playfield .player-tile {
+  z-index: 5;
+  isolation: isolate;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 18% 22%, rgba(99, 127, 80, 0.65) 0 7%, transparent 8%),
+    radial-gradient(circle at 78% 62%, rgba(44, 59, 38, 0.88) 0 9%, transparent 10%),
+    radial-gradient(circle at 46% 84%, rgba(139, 118, 74, 0.48) 0 5%, transparent 6%),
+    linear-gradient(135deg, #263225 0 25%, #1a241b 25% 50%, #30402b 50% 75%, #20291f 75%) !important;
+  background-size:
+    15px 15px,
+    18px 18px,
+    20px 20px,
+    8px 8px !important;
   box-shadow: inset 0 0 0 2px rgba(110, 190, 255, 0.62);
 }
 
@@ -1040,7 +1053,10 @@ dd {
 }
 
 .playfield .player-sprite {
-  filter: drop-shadow(0 0 3px rgba(0, 0, 0, 0.58));
+  width: 118%;
+  height: 118%;
+  transform: translateY(-5%) scaleX(var(--sprite-scale-x));
+  filter: none !important;
 }
 
 .playfield .enemy-sprite {
@@ -1728,7 +1744,6 @@ dd {
   }
   42% {
     transform: translate(var(--player-lunge-x), var(--player-lunge-y)) scale(1.15) rotate(-5deg);
-    filter: drop-shadow(0 5px 4px rgba(0, 0, 0, 0.44)) drop-shadow(0 0 8px rgba(247, 214, 129, 0.75));
   }
 }
 
@@ -1739,7 +1754,6 @@ dd {
   }
   42% {
     transform: translate(var(--player-lunge-x), var(--player-lunge-y)) scale(1.15) rotate(5deg);
-    filter: drop-shadow(0 5px 4px rgba(0, 0, 0, 0.44)) drop-shadow(0 0 8px rgba(247, 214, 129, 0.75));
   }
 }
 
