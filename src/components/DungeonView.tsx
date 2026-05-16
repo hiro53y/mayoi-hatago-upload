@@ -157,6 +157,11 @@ export default function DungeonView({ state }: Props) {
             <span key={`slash-${playerAttackTarget.id}`} className={`attack-slash slash-${playerAttackTarget.direction}`} aria-hidden="true" />
           ) : null}
           {hitEvent ? <span key={`hit-${hitEvent.id}`} className="hit-burst" aria-hidden="true" /> : null}
+          {enemyHit?.damage ? (
+            <span key={`damage-${enemyHit.id}`} className="damage-number" aria-hidden="true">
+              -{enemyHit.damage}
+            </span>
+          ) : null}
           {enemyAttackSource ? <span key={`enemy-strike-${enemyAttackSource.id}`} className="enemy-strike-mark" aria-hidden="true" /> : null}
         </div>,
       );

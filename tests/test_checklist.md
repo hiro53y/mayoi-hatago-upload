@@ -19,6 +19,10 @@
 - [x] 代表スプライトの左上ピクセルが透過で、背景の黒線・クロマキーが残っていないことを確認
 - [x] 操作キャラクター4方向PNG（`player-down/right/up/left.png`）の左上ピクセルが透過で、下端に不透明ピクセルがないことを確認
 - [x] `DungeonSprite.tsx` がプレイヤー向き別画像と敵の左右反転クラスを参照することを確認
+- [x] 変更前の低頭身キャラクター参照で再生成した4方向PNGへ差し替え
+- [x] 黒い横線の原因になる `.playfield::after` スキャンラインオーバーレイを無効化
+- [x] 攻撃ヒット時のVisualEventに `damage` が入り、ダメージ表示に使えることをテスト
+- [x] 斬撃SE用 `playSlashHitSe()` を追加し、プレイヤー攻撃ヒット時に呼ばれることを型チェック
 - [x] `public/assets/bgm/README.md` にタイトル/1〜10階のmp3命名規則があることを確認
 - [x] `npm run test` 成功（5 test groups passed）
 - [x] `npx tsc -b` 成功

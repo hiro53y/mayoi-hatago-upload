@@ -165,6 +165,7 @@ export interface VisualEvent {
   target: Position;
   direction: Direction;
   hit: boolean;
+  damage?: number;
 }
 
 export interface RunStats {

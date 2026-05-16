@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { GameState } from '../game/types';
 import type { PlayerCommand } from '../game/actions';
+import { playSlashHitSe } from '../game/sound';
 import DungeonView from './DungeonView';
 import StatusBar from './StatusBar';
 import MobileControls from './MobileControls';
@@ -20,6 +21,7 @@ type Modal = 'inventory' | 'equipment' | 'log' | 'help' | 'menu' | null;
 
 export default function GameScreen({ state, onCommand, onBackToTitle }: Props) {
   const [modal, setModal] = useState<Modal>(null);
+  const lastSeEventId = useRef(0);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -75,6 +77,15 @@ export default function GameScreen({ state, onCommand, onBackToTitle }: Props) {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [modal, onCommand]);
+
+  useEffect(() => {
+    const hitEvents = (state.visualEvents ?? []).filter(
+      (event) => event.kind === 'playerAttack' && event.hit && event.damage && event.id > lastSeEventId.current,
+    );
+    if (hitEvents.length === 0) return;
+    lastSeEventId.current = Math.max(...hitEvents.map((event) => event.id));
+    playSlashHitSe();
+  }, [state.visualEvents]);
 
   const closeModal = () => setModal(null);
 

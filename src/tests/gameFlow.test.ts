@@ -166,6 +166,10 @@ export function runGameFlowTests(): void {
     attackState.visualEvents?.some((event) => event.kind === 'playerAttack' && event.hit),
     'contact attack should emit a visible hit event',
   );
+  assert(
+    attackState.visualEvents?.some((event) => event.kind === 'playerAttack' && event.hit && (event.damage ?? 0) > 0),
+    'contact attack hit event should include damage for floating damage text',
+  );
 
   let waitState = createNewGame(9191);
   waitState.enemies = [];

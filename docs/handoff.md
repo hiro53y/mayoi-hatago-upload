@@ -34,6 +34,10 @@
 - 操作キャラクターは `state.player.facing` に応じて画像を切り替えるよう変更。
 - 敵キャラクターはプレイヤーが敵の右側にいるとき `enemy-facing-right` で左右反転するよう変更。
 - プレイヤー下側の黒線対策として、下端に不透明ピクセルのない新規透過PNGへ差し替え、プレイヤーだけ下方向ドロップシャドウを使わないCSSへ変更。
+- 添付確認後、変更前の低頭身キャラクターに寄せた4方向スプライトをGPT image 2.0で再生成し直した。
+- スプライト上に黒い横線が重なる原因になっていた `.playfield::after` のスキャンライン風オーバーレイを無効化した。
+- `VisualEvent.damage` を追加し、攻撃ヒット時に火花エフェクトとダメージ数値を表示するようにした。
+- `src/game/sound.ts` を追加し、プレイヤー攻撃ヒット時に短い斬撃SEをWeb Audioで鳴らすようにした。
 - BGM hook `src/game/bgm.ts` を追加し、タイトル画面と各階層でmp3が存在する場合だけループ再生するようにした。
 - BGM配置手順を `README.md` と `public/assets/bgm/README.md` に追記。
 - スマホ縦画面でゲーム全体が上に詰まりすぎないよう、`.game-screen` の配置を中央寄せに調整。
@@ -51,6 +55,9 @@
 - 今回改修後の `npm run test`: 成功（5 test groups passed）。
 - 今回改修後の `npx tsc -b`: 成功。
 - 4方向プレイヤー画像の透過確認: `player-down/right/up/left.png` の左上alphaが0、下端8行に不透明ピクセルなし。
+- 低頭身スプライト再生成後の `npm run test`: 成功（5 test groups passed）。
+- 低頭身スプライト再生成後の `npx tsc -b`: 成功。
+- 再生成4方向プレイヤー画像の透過確認: `player-down/right/up/left.png` の左上alphaが0、下端10行に不透明ピクセルなし。
 - 代表スプライトの透過確認: `player.png`、`enemy-tanuki.png`、`item-food.png`、`stairs.png`、`trap-set.png` の左上alphaが0。
 - `npm run build` と `npm run dev` はこのローカルWindows環境で既知の `esbuild spawn EPERM` によりVite設定ロード時に失敗。
 - ログ/満腹度/UI調整後の `npm run test` と `npm run build`: 成功。

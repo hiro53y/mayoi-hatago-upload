@@ -75,20 +75,28 @@ export function createEnemiesForFloor(map: DungeonMap, floor: number, avoidPosit
 
 function enemyAttackPlayer(state: GameState, enemy: Enemy, rng: Rng): GameState {
   const hit = didHit(0.86, rng);
-  let nextState = appendVisualEvent(state, {
-    kind: 'enemyAttack',
-    source: { ...enemy.position },
-    target: { ...state.player.position },
-    direction: directionBetween(enemy.position, state.player.position),
-    hit,
-  });
   if (!hit) {
+    const nextState = appendVisualEvent(state, {
+      kind: 'enemyAttack',
+      source: { ...enemy.position },
+      target: { ...state.player.position },
+      direction: directionBetween(enemy.position, state.player.position),
+      hit,
+    });
     return addEnemyLog(nextState, `${enemy.name}の攻撃は外れた。`, 'normal');
   }
 
   const armor = getEquippedArmor(state.player);
   const guardBonus = armor?.itemId === 'iron-umbrella' ? 1 : 0;
   const damage = Math.max(1, calculateDamage(enemy.attack, getPlayerDefense(state.player), rng) - guardBonus);
+  let nextState = appendVisualEvent(state, {
+    kind: 'enemyAttack',
+    source: { ...enemy.position },
+    target: { ...state.player.position },
+    direction: directionBetween(enemy.position, state.player.position),
+    hit,
+    damage,
+  });
   let player = { ...state.player, hp: Math.max(0, state.player.hp - damage) };
   nextState = {
     ...state,

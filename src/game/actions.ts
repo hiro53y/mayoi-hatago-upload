@@ -150,6 +150,7 @@ function attackEnemy(state: GameState, enemy: Enemy, rng: Rng): GameState {
     target: { ...enemy.position },
     direction: state.player.facing,
     hit: true,
+    damage,
   });
   nextState = appendLog(nextState, `旅人の攻撃。${enemy.name}に${damage}ダメージ。`, 'normal');
   if (nextEnemy.hp <= 0) nextState = defeatEnemy(nextState, nextEnemy);
