@@ -1,6 +1,6 @@
 {
   "name": "fushigina-dungeon-modoki",
-  "version": "0.1.0",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "engines": {
@@ -10,17 +10,18 @@
     "dev": "node scripts/generate-pwa-icons.cjs && vite --host 0.0.0.0",
     "build": "node scripts/generate-pwa-icons.cjs && tsc -b && vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "test": "tsc -p tsconfig.test.json && node scripts/prepare-test-build.cjs && node .test-build/tests/run-tests.js"
+    "test": "vitest run"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^5.0.4",
-    "vite": "^7.1.10",
-    "typescript": "^5.9.3",
     "react": "^19.1.1",
-    "react-dom": "^19.1.1"
+    "react-dom": "^19.1.1",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.10"
   },
   "devDependencies": {
     "@types/react": "^19.1.16",
-    "@types/react-dom": "^19.1.9"
+    "@types/react-dom": "^19.1.9",
+    "vitest": "^3.2.4"
   }
 }

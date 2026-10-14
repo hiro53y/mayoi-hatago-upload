@@ -1,123 +1,96 @@
-import { useMemo, useState } from 'react';
-import { createNewGame } from './game/gameState';
-import { performPlayerAction, type PlayerCommand } from './game/actions';
-import {
-  clearProgress,
-  loadProgress,
-  loadRecords,
-  recordRunResult,
-  recordRunStart,
-  saveProgress,
-  saveRecords,
-  updateRecordsFromState,
-} from './game/save';
-import type { GameResult, GameState, Records } from './game/types';
-import { useBgm } from './game/bgm';
-import TitleScreen from './components/TitleScreen';
-import GameScreen from './components/GameScreen';
-import ResultScreen from './components/ResultScreen';
-import HelpModal from './components/HelpModal';
-import RecordsScreen from './components/RecordsScreen';
+// 画面の切り替え：タイトル → 村 → 冒険 → 結果
+import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { MODE_NAME } from './content/world';
+import { departure, finishRun, todayKey, type Meta, type Settings, type Summary } from './engine/meta';
+import { loadMeta, loadRun, saveMeta, saveRun } from './engine/save';
+import type { Run, RunMode } from './engine/types';
+import { floorTrack, setBgmVolume, titleTrack, useBgm } from './audio/bgm';
+import { setSeVolume } from './audio/sound';
+import { GameScreen } from './ui/GameScreen';
+import { Village } from './ui/Village';
+import { ResultScreen, TitleScreen } from './ui/TitleResult';
+import { useSpritesReady } from './ui/common';
 
-type Screen = 'title' | 'game' | 'records' | 'help' | 'result';
+type Screen = 'title' | 'village' | 'game' | 'result';
+
+// 開発用の絵の一覧（本番のビルドでは読み込まない）
+const Gallery = import.meta.env.DEV ? lazy(() => import('./ui/Gallery')) : null;
 
 export default function App() {
-  const initialProgress = useMemo(() => loadProgress(), []);
+  const ready = useSpritesReady();
+  const [meta, setMetaState] = useState<Meta>(() => loadMeta());
+  const [run, setRun] = useState<Run | null>(() => loadRun());
   const [screen, setScreen] = useState<Screen>('title');
-  const [gameState, setGameState] = useState<GameState | null>(initialProgress);
-  const [records, setRecords] = useState<Records>(() => loadRecords());
-  const [lastResult, setLastResult] = useState<GameResult | null>(initialProgress?.result ?? null);
-  const [hasSave, setHasSave] = useState(Boolean(initialProgress));
+  const [summary, setSummary] = useState<Summary | null>(null);
+  const [floor, setFloor] = useState(run?.floorNo ?? 1);
 
-  useBgm(
-    screen === 'title'
-      ? { screen: 'title' }
-      : screen === 'game' && gameState
-        ? { screen: 'game', floor: gameState.floor }
-        : { screen: 'none' },
-  );
+  const setMeta = useCallback((m: Meta) => { setMetaState(m); saveMeta(m); }, []);
+  const settings = meta.settings;
+  const setSettings = useCallback((s: Settings) => setMeta({ ...meta, settings: s }), [meta, setMeta]);
 
-  const persistRecords = (nextRecords: Records) => {
-    setRecords(nextRecords);
-    saveRecords(nextRecords);
-  };
+  useEffect(() => { setSeVolume(settings.se); setBgmVolume(settings.bgm); }, [settings.se, settings.bgm]);
 
-  const startNewGame = () => {
-    const nextRecords = recordRunStart(records);
-    persistRecords(nextRecords);
-    const nextGame = createNewGame(Date.now());
-    setGameState(nextGame);
-    saveProgress(nextGame);
-    setHasSave(true);
-    setLastResult(null);
+  // 階が変わったら曲を変える
+  useEffect(() => {
+    if (screen !== 'game' || !run) return undefined;
+    const id = window.setInterval(() => setFloor(run.floorNo), 800);
+    return () => window.clearInterval(id);
+  }, [screen, run]);
+
+  const bgm = useMemo(() => {
+    if (screen === 'game' && run) return floorTrack(run.mode, floor);
+    if (screen === 'result') return null;
+    return titleTrack();
+  }, [screen, run, floor]);
+  useBgm(bgm, settings.bgm);
+
+  const depart = (mode: RunMode, carry: number[]) => {
+    const copy: Meta = JSON.parse(JSON.stringify(meta));
+    const seed = (Date.now() ^ Math.floor(Math.random() * 0x7fffffff)) | 0;
+    const next = departure(copy, mode, carry, seed, mode === 'daily' ? todayKey() : undefined);
+    setMeta(copy);
+    saveRun(next);
+    setRun(next);
+    setFloor(next.floorNo);
     setScreen('game');
   };
 
-  const continueGame = () => {
-    const progress = loadProgress();
-    if (!progress) {
-      setHasSave(false);
-      return;
-    }
-    setGameState(progress);
-    setLastResult(null);
-    setScreen('game');
-  };
-
-  const commitGameState = (nextGame: GameState) => {
-    setGameState(nextGame);
-    const discovered = updateRecordsFromState(records, nextGame);
-
-    if (nextGame.status === 'playing') {
-      saveProgress(nextGame);
-      persistRecords(discovered);
-      setHasSave(true);
-      return;
-    }
-
-    clearProgress();
-    setHasSave(false);
-    if (nextGame.result) {
-      const completed = recordRunResult(discovered, nextGame.result);
-      persistRecords(completed);
-      setLastResult(nextGame.result);
-    }
+  const end = useCallback(() => {
+    if (!run) return;
+    const copy: Meta = JSON.parse(JSON.stringify(meta));
+    const s = finishRun(copy, run);
+    setMeta(copy);
+    saveRun(null);
+    setSummary(s);
+    setRun(null);
     setScreen('result');
-  };
+  }, [run, meta, setMeta]);
 
-  const handleCommand = (command: PlayerCommand) => {
-    if (!gameState) return;
-    commitGameState(performPlayerAction(gameState, command));
-  };
+  const giveUp = useCallback(() => {
+    if (!run) return;
+    run.end = { kind: 'quit', cause: 'あきらめた', floor: run.floorNo };
+    end();
+  }, [run, end]);
 
-  const backToTitle = () => {
-    setScreen('title');
-  };
+  if (!ready) return <div className="loading">迷宮を準備しています……</div>;
+  if (Gallery && location.search.includes('gallery')) return <Suspense fallback={null}><Gallery /></Suspense>;
 
+  if (screen === 'game' && run) {
+    return <GameScreen key={run.seed} run={run} settings={settings} onSettings={setSettings} onEnd={end} onSuspend={() => setScreen('title')} onGiveUp={giveUp} />;
+  }
+  if (screen === 'result' && summary) {
+    return <ResultScreen s={summary} onVillage={() => { setSummary(null); setScreen('village'); }} />;
+  }
+  if (screen === 'village' && !run) {
+    return <Village meta={meta} onMeta={setMeta} onDepart={depart} settings={settings} onSettings={setSettings} onTitle={() => setScreen('title')} />;
+  }
   return (
-    <main className="app-shell">
-      {screen === 'title' && (
-        <TitleScreen
-          hasSave={hasSave}
-          records={records}
-          onNewGame={startNewGame}
-          onContinue={continueGame}
-          onHelp={() => setScreen('help')}
-          onRecords={() => setScreen('records')}
-        />
-      )}
-      {screen === 'game' && gameState && (
-        <GameScreen
-          state={gameState}
-          onCommand={handleCommand}
-          onBackToTitle={backToTitle}
-        />
-      )}
-      {screen === 'records' && <RecordsScreen records={records} onBack={backToTitle} />}
-      {screen === 'help' && <HelpModal standalone onClose={backToTitle} />}
-      {screen === 'result' && lastResult && (
-        <ResultScreen result={lastResult} onRetry={startNewGame} onTitle={backToTitle} />
-      )}
-    </main>
+    <TitleScreen
+      hasRun={!!run}
+      runInfo={run ? `${MODE_NAME[run.mode]} ${run.floorNo}階・Lv${run.player.lv}` : ''}
+      onStart={() => setScreen('village')}
+      onContinue={() => setScreen('game')}
+      onAbandon={giveUp}
+    />
   );
 }

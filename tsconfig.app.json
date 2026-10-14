@@ -15,8 +15,9 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
+    "noUnusedLocals": true,
     "jsx": "react-jsx"
   },
   "include": ["src"],
-  "exclude": ["src/tests"]
+  "exclude": []
 }

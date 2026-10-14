@@ -1,290 +1,88 @@
-# 不思議なダンジョンもどき - Fushigina Dungeon Modoki -
+# 不思議なダンジョンもどき 2.0
 
-このフォルダ `deliverables/mayoi-hatago-upload` が、GitHub にアップロードするリポジトリ本体です。GitHub / Cloudflare Pages では、このフォルダの中身をリポジトリ直下として扱ってください。
+スマホ縦画面向けの、和風の「不思議のダンジョン」系ローグライクです。毎回形の変わる迷宮を一手ずつ進み、30階の天守の最上階に座す鬼の王を倒すのが本編の目標です。踏破すると、さらに深い「奈落の九十九階」が開きます。
 
-## 概要
+- 公開URL：https://mayoi-hatago-upload.pages.dev/ （GitHub `hiro53y/mayoi-hatago-upload` の main に push すると Cloudflare Pages が自動でビルド・公開）
+- このフォルダ `deliverables/mayoi-hatago-upload` がリポジトリ本体です（フォルダ名・場所は変えない）。
+- React 19 ＋ TypeScript ＋ Vite 7。迷宮は Canvas 2D で描画。サーバーは使わず、保存は端末の localStorage。
+- 既存作品の固有名詞・台詞・画像・音は使っていません。一般的なローグライクの仕組みを、独自の名前と表現で作っています。
 
-不思議なダンジョンもどきは、スマホ縦画面を最優先にした和風ターン制ダンジョンローグライクです。React + TypeScript + Vite の静的サイトとして実装しており、GitHub に push すれば Cloudflare Pages の標準的な Git 連携で公開できます。
+## 遊びの中身
 
-既存作品の固有名称、キャラクター、敵名、アイテム名、地名、UI配置、台詞、画像、音楽、効果音、ストーリー設定は使用していません。ゲームシステム上の一般的なローグライク要素を、オリジナル名称と独自UIで構成しています。
-
-## 特徴
-
-- ターン制、グリッド移動、接触戦闘
-- GPT image 2.0で生成したオリジナル手描き風スプライトでキャラクター、敵、道具、階段を表示
-- 操作キャラクターは上下左右の向きに応じてスプライトを切り替え、敵は左右方向を反転表示
-- 攻撃、被弾、階段に短いモーション演出
-- 攻撃ヒット時に火花エフェクト、ダメージ数値、斬撃SEを表示/再生
-- 24 x 24 のランダム生成ダンジョン
-- seed 対応の乱数生成
-- 部屋と通路、到達可能な階段の保証
-- プレイヤー中心の視界、探索済み・未探索表示
-- 敵AIの追跡、ランダム移動、特殊攻撃
-- アイテム収集、使用、装備、捨てる
-- 階層テーマ、小目標、罠、未識別道具、装備特性
-- 空腹、毒、目くらまし、補助状態
-- 9階のボス前イベント、9階から階段を降りると10階到達クリア
-- 行動ごとの localStorage 自動セーブ
-- ゲームオーバー時は進行削除、記録は保持
-- スマホ向け十字キーとPC向けキーボード操作
-- 斬撃、敵攻撃、被弾が分かる短いモーション演出
-- タイトル画面と1〜10階のBGMを `public/assets/bgm/` のmp3差し替えで変更可能
-- PWA対応。Chromeの「ホーム画面に追加」ではなく、条件を満たす環境ではアプリとしてインストール可能
-
-## 操作方法
-
-### スマホ操作
-
-| 操作 | 内容 |
+| 要素 | 内容 |
 |---|---|
-| 十字キー | 移動。敵がいる方向へ進むと攻撃 |
-| 待 | 足踏み。敵が近くにいなければ少し自然回復 |
-| 攻撃 | 現在向いている方向へ攻撃/決定 |
-| 階段 | 階段上で次の階層へ進む |
-| 道具 | インベントリを開く |
-| 装備 | 装備パネルを開く |
-| ？ | 遊び方 |
-| メニュー | タイトルへ戻る確認 |
+| 迷宮 | 本編30階（6つの帯：竹林・洞窟・水路・溶岩・墓所・天守）、深層99階（持ち込み不可・レベル1から）、毎日の挑戦10階、道場3階 |
+| 地図 | 56×32。区画ごとの部屋と通路。店・モンスターハウス・大部屋・水・溶岩・暗闇の階・霧の階。長居すると突風で次の階へ |
+| 操作 | 8方向の移動、角をはさんだ斜めは不可、ダッシュ（通路の曲がり角に沿う）、向き変え、足踏み、休む |
+| 敵 | 妖怪をもとにした16系統×3段階（48種）＋店主・番人・ボス。盗み・混乱・火・投石・錆・壁抜け・倍速・2マス攻撃・爆発・術・毒・レベル下げ・吹き飛ばし・空腹・眠り。敵が敵を倒すと上の段階に育つ |
+| 道具 | 101種（武器15・防具13・お守り12・草16・巻物16・杖13・壺7・食べ物5・矢3・お金） |
+| 未識別 | 草・巻物・杖・壺・お守りは、遊ぶたびに仮の名前が変わる。使う・識別・店の値段・名前を付ける |
+| 装備 | 武器・防具の強化値と「印」。合成の壺で印を引き継ぐ。呪いは外せない |
+| 店 | 拾って出口へ向かうと代金を請求。床に置くと買い取り。払わずに逃げると泥棒になり、店主と番人が追ってくる |
+| 仲間 | 契りの杖を当てた敵が仲間になる（2体まで）。敵を倒して育つ |
+| 壁を壊す | つるはし（叩いた壁を掘る・印「掘」）、掘削の杖（まっすぐ10マスくり抜く） |
+| 村 | 倉庫（60個・本編へ12個まで持ち込み）、鍛冶屋、よろず屋、図鑑（敵・道具）、冒険の記録、称号20、毎日の挑戦、設定 |
 
-### PC操作
+## 操作
 
-| キー | 内容 |
-|---|---|
-| 矢印キー / WASD | 移動 |
-| Space | 足踏み |
-| I | インベントリ |
-| E | 装備 |
-| G または > | 階段を降りる |
-| Enter | 決定相当の待機 |
-| Escape | 閉じる / メニュー |
-| ? | ヘルプ |
+スマホ：十字パッド（8方向・押し続けると歩き続ける・真ん中は足踏み／長押しで休む）、A＝攻撃、B＝ダッシュ（押してから方向）、上の段に 道具・矢・向き・地図・休む・記録。投げる・振る・撃つは方向を選べ、敵のいる方向が光ります。
 
-## 開発環境
+PC：矢印・WASD・QEZC（斜め）・テンキー、Shift＋方向でダッシュ、Space 攻撃、X 足踏み、R 休む、I 道具、G 階段、V 矢、F 向き、M 地図、L 記録、Esc メニュー。
 
-検証時点: 2026-05-06 JST
-
-| 項目 | 値 |
-|---|---|
-| Node.js | v24.14.0 で確認 |
-| npm | v11.9.0 で確認 |
-| フレームワーク | React / Vite |
-| 言語 | TypeScript |
-| 保存 | localStorage |
-| 公開 | Cloudflare Pages 静的サイト |
-
-## インストール方法
+## 開発
 
 ```bash
 npm install
+npm run dev        # 開発サーバー
+npm run test       # Vitest（単体テスト・地図2,000通り・自動プレイの総当たり）
+npm run build      # tsc → vite build → dist/
 ```
 
-## ローカル起動方法
+- `FUZZ_RUNS=300 npx vitest run tests/fuzz.test.ts`：でたらめな操作の自動プレイを増やして総当たり。
+- `BALANCE=100 npx vitest run tests/balance.test.ts`：上手なボットで難易度を集計（到達階・倒れた原因・レベル）。`RUN_MODE=deep` などでモードを変えられる。
+- `TRACE=番号 npx vitest run tests/trace.test.ts`：ボット1回分の記録を表示。
+- 開発サーバーで `?bot=1` を付けると画面上で自動プレイ、`?gallery` で全部の絵を一覧できる（本番のビルドには入らない）。
 
-```bash
-npm run dev
-```
-
-Windows では `start_dev.bat`、macOS/Linux では `start_dev.sh` でも起動できます。
-
-## ビルド方法
-
-```bash
-npm run build
-```
-
-ビルド成果物は `dist/` に出力されます。
-
-## テスト方法
-
-```bash
-npm run test
-```
-
-Vite/Vitest 非依存の軽量テストランナーで、以下を検証します。
-
-- マップ生成: 階段到達可能、24 x 24、部屋数
-- 戦闘: ダメージ最低1、命中率境界
-- セーブ: 壊れたデータの安全読み込み、保存/削除
-
-## BGM差し替え方法
-
-mp3ファイルはリポジトリ内の `public/assets/bgm/` に保存してください。このフォルダ外のゲームデータには依存しません。
-
-| 画面 | ファイル名 |
-|---|---|
-| タイトル | `title.mp3` |
-| 1階 | `floor-01.mp3` |
-| 2階 | `floor-02.mp3` |
-| 3階 | `floor-03.mp3` |
-| 4階 | `floor-04.mp3` |
-| 5階 | `floor-05.mp3` |
-| 6階 | `floor-06.mp3` |
-| 7階 | `floor-07.mp3` |
-| 8階 | `floor-08.mp3` |
-| 9階 | `floor-09.mp3` |
-| 10階 | `floor-10.mp3` |
-
-存在しないmp3は再生されません。スマホブラウザでは自動再生制限により、初回タップやキー入力後にBGMが始まる場合があります。
-
-## Cloudflare Pages デプロイ方法
-
-### GitHubにアップロードするファイル
-
-Cloudflare Pages の Git連携で公開する場合は、リポジトリ直下に以下をアップロードします。
-
-| アップロード | 内容 |
-|---|---|
-| `src/` | ゲーム本体のReact/TypeScriptコード |
-| `public/` | Cloudflare Pages用 `_redirects`、PWA manifest、Service Worker、アイコン、スプライト、BGM配置フォルダ |
-| `scripts/` | テスト補助スクリプト |
-| `index.html` | ViteのHTMLエントリ |
-| `package.json` / `package-lock.json` | 依存関係とnpm scripts |
-| `tsconfig*.json` | TypeScript設定 |
-| `vite.config.mjs` | Vite設定 |
-| `wrangler.toml` | Pages向け補助設定 |
-| `README.md` | セットアップ、操作、デプロイ手順 |
-| `TASKS.md` / `docs/` / `tests/` | 管理・検証メモ |
-| `start_*.bat` / `start_*.sh` | ローカル起動補助 |
-
-以下はアップロード不要です。`.gitignore` で除外しています。
-
-| アップロード不要 | 理由 |
-|---|---|
-| `node_modules/` | `npm install` で復元する依存フォルダ |
-| `dist/` | `npm run build` でCloudflare Pages側が生成 |
-| `.test-build/` | `npm run test` の中間生成物 |
-| `out/` | ログ・中間出力 |
-| `.git/` | Gitの内部管理フォルダ |
-
-1. GitHubにリポジトリを作成する
-2. コードをpushする
-3. Cloudflareダッシュボードを開く
-4. Workers & Pages を開く
-5. Pages を作成する
-6. GitHubリポジトリを接続する
-7. Framework preset に React / Vite 相当を選択する
-8. Build command に `npm run build` を指定する
-9. Build output directory に `dist` を指定する
-10. Deploy を実行する
-11. 公開URLで動作確認する
-
-### Cloudflare Pages 設定値
-
-| 項目 | 値 |
-|---|---|
-| Framework preset | React / Vite 相当 |
-| Build command | `npm run build` |
-| Build output directory | `dist` |
-| Root directory | `/` |
-| Environment variables | 通常は不要。必要な場合のみ `NODE_VERSION=22.16.0` |
-| Node.js version | `.node-version` で `22.16.0` を指定 |
-
-`public/_redirects` に `/* /index.html 200` を配置しています。現状は React Router を使わず App 内の screen state で画面を切り替えていますが、将来SPAルーティングを追加しても直URLで404になりにくい構成です。
-
-## PWAインストールについて
-
-ChromeでPWAとしてインストールできるよう、以下を実装しています。
-
-- `public/manifest.webmanifest`
-- `public/sw.js`
-- `start_url: /`
-- `display: standalone`
-- 192px / 512px / maskable 512px のPNGアイコンをビルド時に生成
-- HTTPS配信前提のService Worker fetch handler
-
-Cloudflare Pagesの公開URLはHTTPSになるため、デプロイ後にChromeで開くとインストール条件を満たします。初回アクセス直後に出ない場合は、数十秒操作してからChromeメニューの「アプリをインストール」を確認してください。
-
-## ディレクトリ構成
+## 構成
 
 ```text
 src/
-  main.tsx
-  App.tsx
-  game/
-    types.ts
-    constants.ts
-    balance.ts
-    rng.ts
-    mapGenerator.ts
-    pathfinding.ts
-    gameState.ts
-    actions.ts
-    combat.ts
-    enemyAI.ts
-    items.ts
-    equipment.ts
-    statusEffects.ts
-    save.ts
-    score.ts
-  components/
-    TitleScreen.tsx
-    GameScreen.tsx
-    DungeonView.tsx
-    StatusBar.tsx
-    MobileControls.tsx
-    InventoryModal.tsx
-    EquipmentPanel.tsx
-    LogPanel.tsx
-    ResultScreen.tsx
-    HelpModal.tsx
-    ConfirmDialog.tsx
-    RecordsScreen.tsx
-  styles/
-    global.css
-  tests/
-    mapGenerator.test.ts
-    combat.test.ts
-    save.test.ts
+  engine/   ゲームの仕組み（DOM に依存しない純粋な TS。seed 付き乱数で決定的）
+    types.ts  状態の型        mapgen.ts 地図の生成     geo.ts 通れる・見える・距離
+    core.ts   名前・値段・強さ  actors.ts 打撃・倒れる・出現  combat.ts 打ち合い・特技・飛ぶ物
+    effects.ts 道具と罠の効果   ai.ts 敵と仲間の動き     step.ts 1手の進行   run.ts 冒険の開始と階の移動
+    meta.ts   村・倉庫・記録・毎日の挑戦・称号          save.ts 保存（壊れたデータは読まない）
+  content/  敵・道具・罠・帯・称号のデータ
+  render/   Canvas の描画（地形・キャラ・演出・ミニマップ）と絵の読み込み
+  art/      描き足した絵（SVG）
+  audio/    BGM（public/assets/bgm の mp3）と効果音（Web Audio で合成）
+  ui/       画面（タイトル・村・冒険・持ち物・結果・設定・遊び方）
+tests/      Vitest：engine / mapgen / meta / fuzz（自動プレイ）/ balance / trace
 public/
-  _redirects
-  assets/
-    bgm/
-      title.mp3
-      floor-01.mp3 ... floor-10.mp3
-    sprites/
-      *.png
-vite.config.mjs
-wrangler.toml
+  assets/sprites/v2/  ゲームで使う絵（元のGPT生成PNGを192pxに整えたもの。scripts/prepare-sprites.py で作成）
+  assets/bgm/         title.mp3、floor-01〜10.mp3
+  manifest.webmanifest / sw.js / icons/   PWA（id・start_url・scope は1.0から変えていない）
 ```
 
-## ゲーム仕様
+## 保存
 
-| 項目 | 内容 |
+| キー | 内容 |
 |---|---|
-| クリア条件 | 10階到達 |
-| 初期HP | 30 |
-| 初期攻撃/防御 | 6 / 2 |
-| 初期満腹度 | 100 |
-| インベントリ上限 | 12 |
-| 1ターン | プレイヤー行動、満腹度消費、敵行動、状態処理、死亡判定、自動セーブ |
-| 敵 | 迷い狸、草陰狐、土くれ武者、灯り鬼火、腹ぺこ河童、錆び鎧、影法師 |
-| アイテム | 薬草、食料、札、香、武器、防具 |
-| 罠 | 絡み泥、腹減らし床、呼び鈴床 |
-| 小目標 | 敵討伐、道具収集、階段発見の短期目標。達成でスコア加算 |
-| 未識別 | 一部の草、札、補助道具は使うまで正体が分からない |
-| 装備特性 | 命中補正、獣系特効、槍の射程、罠発見、被ダメージ軽減 |
-| 保存 | 進行データと記録データを localStorage に分離 |
+| `fdm2:run` | 冒険の途中（毎手保存。アプリを閉じても「つづきから」） |
+| `fdm2:meta` | 村の蓄え・倉庫・図鑑・記録・毎日の挑戦・称号・設定 |
 
-## 今後の拡張案
+1.0 の保存データは読み込みません（消しもしません）。
 
-- 罠の種類追加
-- 未識別アイテムの鑑定、呪い、祝福
-- 店
-- NPC
-- ボス階
-- 武器防具の強化
-- 合成
-- 倉庫
-- 実績
-- 日替わりダンジョン
-- チュートリアル
-- 追加スプライトアセット
-- 効果音
-- オフライン対応
-- スマホホーム画面追加対応
-- Cloudflare Pages Functionsによるランキング機能
-- Cloudflare D1によるスコア保存
-- Cloudflare KVによる日替わりダンジョンseed配信
-- Cloudflare Analyticsを使った簡易アクセス確認
+## BGM
 
-初期実装は Cloudflare Pages の静的公開のみで完結しています。Functions、D1、KV は将来拡張候補です。
+`public/assets/bgm/` の `title.mp3`（タイトル・村）と `floor-01.mp3`〜`floor-10.mp3`。本編は3階ごとに1曲、深層は30階ごとに同じ並びをくり返し、毎日の挑戦は階の数字の曲を使います。無いファイルは鳴らしません。
+
+## Cloudflare Pages の設定
+
+| 項目 | 値 |
+|---|---|
+| Build command | `npm run build` |
+| Build output directory | `dist` |
+| Node.js | `.node-version`（22.16.0） |
+
+`public/_redirects` に `/* /index.html 200`。
