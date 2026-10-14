@@ -59,6 +59,8 @@ describe('自動プレイ', () => {
       enterFloor(ctx, 30, []);
       closeCtx(ctx);
       Object.assign(run.player, { lv: 40, maxHp: 900, hp: 900, str: 30, maxStr: 30, hunger: 100 });
+      // 流れの確認なので倒れないようにする（強さの調整は balance で見る）
+      run.player.st.invincible = 99999;
       const result = playOut(run, smartAction, mulberry(k), 4000);
       expect(result.errors).toEqual([]);
       if (result.run.end?.kind === 'clear') { cleared++; expect(result.run.bossDown).toBe(true); }

@@ -6,6 +6,7 @@ import { DX, DY, T_FLOOR, T_HARD, T_LAVA, T_WALL, T_WATER, type GameEvent, type 
 import { itemSprite, monsterSprite, playerSprite, sprite, trapSprite } from './sprites';
 import { floorTile, liquidTile, wallTile } from './tiles';
 import { playSe } from '../audio/sound';
+import { BANDS } from '../content/world';
 
 interface Ent {
   uid: number;
@@ -55,7 +56,27 @@ export class Renderer {
   mini: 0 | 1 | 2 = 1;
   opts: ViewOptions = { fast: false };
   private quick = false;
+  private banner: { title: string; sub: string; t0: number; boss: boolean; town: boolean } | null = null;
+  private shakeT0 = 0;
+  private shakeDur = 0;
+  private shakePow = 0;
+
+  private shake(t0: number, dur: number, pow: number) {
+    this.shakeT0 = t0;
+    this.shakeDur = dur;
+    this.shakePow = pow;
+  }
+
   private camX = 0;
+  private origin = { x: 0, y: 0 };
+
+  /** 画面上の点 → 迷宮のマス */
+  tileAtPoint(px: number, py: number): { x: number; y: number } | null {
+    if (!this.run) return null;
+    const x = Math.floor((px - this.origin.x) / this.tile), y = Math.floor((py - this.origin.y) / this.tile);
+    if (x < 0 || y < 0 || x >= this.run.floor.w || y >= this.run.floor.h) return null;
+    return { x, y };
+  }
   private camY = 0;
 
   constructor(private canvas: HTMLCanvasElement) {
@@ -184,6 +205,8 @@ export class Renderer {
             const ent = this.ents.get(e.uid);
             if (ent) ent.flash = now();
             this.popups.push({ x: e.x, y: e.y, text: String(e.n), color: e.uid === 0 ? '#ff6a5a' : e.crit ? '#ffe14a' : '#ffffff', t0: now(), big: e.crit });
+            const big = e.uid === 0 && this.run ? e.n >= this.run.player.maxHp * 0.2 : !!e.crit;
+            if (big) this.shake(now(), 260, e.crit ? 4 : 6);
           },
         };
       case 'heal':
@@ -218,7 +241,19 @@ export class Renderer {
       case 'se':
         return { dur: 0, start: () => playSe(e.name) };
       case 'floor':
-        return { dur: this.speed(260), start: () => { if (this.run) this.sync(this.run); this.fadeT0 = now(); } };
+        return {
+          dur: this.speed(260),
+          start: () => {
+            if (this.run) {
+              this.sync(this.run);
+              const f = this.run.floor;
+              const name = f.kind === 'boss' ? '天守の最上階' : f.kind === 'town' ? '宿場' : BANDS[f.band].name;
+              this.banner = { title: `${this.run.floorNo}F`, sub: name, t0: now(), boss: f.kind === 'boss', town: f.kind === 'town' };
+              if (f.kind === 'boss') this.shake(now(), 900, 7);
+            }
+            this.fadeT0 = now();
+          },
+        };
       default:
         return { dur: 0, start: () => undefined };
     }
@@ -292,7 +327,11 @@ export class Renderer {
   private draw(now: number) {
     const g = this.g;
     const run = this.run;
-    g.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
+    // 画面の揺れ
+    const sk = this.shakeDur ? 1 - (now - this.shakeT0) / this.shakeDur : 0;
+    const sx0 = sk > 0 ? (Math.sin(now * 0.09) * this.shakePow * sk) : 0;
+    const sy0 = sk > 0 ? (Math.cos(now * 0.11) * this.shakePow * sk) : 0;
+    g.setTransform(this.dpr, 0, 0, this.dpr, sx0 * this.dpr, sy0 * this.dpr);
     g.fillStyle = '#07060a';
     g.fillRect(0, 0, this.cssW, this.cssH);
     if (!run) return;
@@ -308,6 +347,7 @@ export class Renderer {
     }
     const originX = this.cssW / 2 - (this.camX + 0.5) * T;
     const originY = this.cssH / 2 - (this.camY + 0.5) * T;
+    this.origin = { x: originX, y: originY };
     const x0 = Math.max(0, Math.floor(-originX / T) - 1), x1 = Math.min(f.w - 1, Math.ceil((this.cssW - originX) / T));
     const y0 = Math.max(0, Math.floor(-originY / T) - 1), y1 = Math.min(f.h - 1, Math.ceil((this.cssH - originY) / T) + 1);
     const vis = visibleFrom(f, run.player.x, run.player.y);
@@ -385,6 +425,11 @@ export class Renderer {
       const def = isPlayer ? null : MON_SAFE(ent.id);
       if (def?.invisible && !seeAll) alpha *= 0.28;
       if (!vis.has(tileIndex) && !isPlayer) alpha *= 0.6;
+      if (m?.disguise) {
+        const s = itemSprite(m.disguise);
+        if (s) g.drawImage(s, originX + pos.x * T + T * 0.12, originY + pos.y * T + T * 0.12, T * 0.76, T * 0.76);
+        continue;
+      }
       const img = isPlayer ? playerSprite(ent.dir) : monsterSprite(ent.id);
       const size = isPlayer ? T * 1.18 : def?.role === 'boss' || ent.id === 'boss' ? T * 1.6 : T * 1.12;
       const sx = originX + (pos.x + 0.5) * T - size / 2;
@@ -445,7 +490,8 @@ export class Renderer {
       }
     }
     this.drawEffects(now, originX, originY);
-    if (this.mini) this.drawMinimap(now);
+    if (this.mini && !this.bannerOn(now)) this.drawMinimap(now);
+    this.drawBanner(now);
     // 階の移動のフェード
     const fade = 1 - (now - this.fadeT0) / this.speed(420);
     if (fade > 0) { g.fillStyle = `rgba(0,0,0,${fade})`; g.fillRect(0, 0, this.cssW, this.cssH); }
@@ -517,6 +563,49 @@ export class Renderer {
     }
   }
 
+  private bannerOn(now: number) {
+    return !!this.banner && now - this.banner.t0 < 1700;
+  }
+
+  /** 階に着いた時の題字 */
+  private drawBanner(now: number) {
+    const b = this.banner;
+    if (!b) return;
+    const t = now - b.t0;
+    const life = b.boss ? 2600 : 1700;
+    if (t > life) { this.banner = null; return; }
+    const g = this.g;
+    const a = t < 250 ? t / 250 : t > life - 400 ? (life - t) / 400 : 1;
+    const cy = this.cssH * 0.38;
+    g.save();
+    g.globalAlpha = a * 0.75;
+    const grad = g.createLinearGradient(0, cy - 50, 0, cy + 50);
+    grad.addColorStop(0, 'rgba(0,0,0,0)');
+    grad.addColorStop(0.5, b.boss ? 'rgba(70,0,0,0.95)' : 'rgba(10,8,20,0.9)');
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    g.fillStyle = grad;
+    g.fillRect(0, cy - 50, this.cssW, 100);
+    g.globalAlpha = a;
+    g.textAlign = 'center';
+    g.font = `900 ${Math.round(this.tile * 0.95)}px "Hiragino Mincho ProN", "Yu Mincho", serif`;
+    g.lineWidth = 5;
+    g.strokeStyle = '#000';
+    g.fillStyle = b.boss ? '#ff6a4a' : b.town ? '#ffe6a0' : '#f3ece0';
+    const slide = (1 - Math.min(1, t / 400)) * 20;
+    g.strokeText(b.title, this.cssW / 2 - slide, cy - 4);
+    g.fillText(b.title, this.cssW / 2 - slide, cy - 4);
+    g.font = `700 ${Math.round(this.tile * 0.42)}px "Hiragino Mincho ProN", "Yu Mincho", serif`;
+    g.fillStyle = b.boss ? '#ffc0a0' : '#e9c46a';
+    g.strokeText(b.sub, this.cssW / 2 + slide, cy + this.tile * 0.55);
+    g.fillText(b.sub, this.cssW / 2 + slide, cy + this.tile * 0.55);
+    if (b.boss) {
+      g.font = `700 ${Math.round(this.tile * 0.34)}px sans-serif`;
+      g.fillStyle = '#ffd0c0';
+      g.fillText('― 黄泉の大鬼が待ち受ける ―', this.cssW / 2, cy + this.tile * 1.05);
+    }
+    g.restore();
+  }
+
   /** 迷宮全体の地図（重ねる・全面） */
   private drawMinimap(now: number) {
     const run = this.run!;
@@ -552,7 +641,8 @@ export class Renderer {
     for (const t of f.traps) if ((t.found || charmIs(run, 'c_wanami')) && f.seen[at(f, t.x, t.y)]) dot(t.x, t.y, '#c070ff', 0.32);
     for (const m of run.monsters) {
       if (!(vis.has(at(f, m.x, m.y)) || seeAll || m.ally)) continue;
-      dot(m.x, m.y, m.ally ? '#6dff9a' : m.role === 'keeper' && !m.angry ? '#ffd84a' : '#ff4a3a', 0.5);
+      if (m.disguise) { dot(m.x, m.y, '#5ad2ff', 0.38); continue; }
+      dot(m.x, m.y, m.ally ? '#6dff9a' : m.role === 'npc' ? '#ffffff' : m.role === 'keeper' && !m.angry ? '#ffd84a' : '#ff4a3a', 0.5);
     }
     const blink = Math.floor(now / 400) % 2 === 0;
     dot(run.player.x, run.player.y, blink ? '#ffffff' : '#ffe14a', 0.62);

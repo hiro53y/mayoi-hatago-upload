@@ -4,7 +4,7 @@ import { BANDS, MODE_NAME } from '../content/world';
 import { itemDef } from '../content/items';
 import { MON_BY_ID } from '../content/monsters';
 import { at, dirTo, visibleFrom } from '../engine/geo';
-import { equipped, itemName } from '../engine/core';
+import { buyPrice, equipped, itemName } from '../engine/core';
 import { hostile } from '../engine/actors';
 import { step } from '../engine/step';
 import { saveRun } from '../engine/save';
@@ -14,6 +14,7 @@ import { Renderer } from '../render/renderer';
 import { Inventory } from './Inventory';
 import { Pad } from './Pad';
 import { Modal, itemLabel } from './common';
+import { NpcDialog, PriceHint, StatusPanel, TileInfo } from './Panels';
 import { HelpBody } from './Help';
 import { SettingsBody } from './SettingsPanel';
 import { playSe } from '../audio/sound';
@@ -25,13 +26,27 @@ const KEY_DIRS: Record<string, Dir> = {
 
 const DIR_ARROW = ['↑', '↗', '→', '↘', '↓', '↙', '←', '↖'];
 
+/** 見えている一番近い敵の方向 */
+function nearestEnemyDir(run: Run): Dir | null {
+  const p = run.player;
+  const vis = visibleFrom(run.floor, p.x, p.y);
+  let best: { d: Dir; dist: number } | null = null;
+  for (const m of run.monsters) {
+    if (!hostile(m) || m.disguise || !vis.has(at(run.floor, m.x, m.y))) continue;
+    const dist = Math.max(Math.abs(m.x - p.x), Math.abs(m.y - p.y));
+    const d = dirTo(p, m);
+    if (d !== null && (!best || dist < best.dist)) best = { d, dist };
+  }
+  return best?.d ?? null;
+}
+
 /** 直線上にいるいちばん近い敵の方向（投げる・振る時の目安） */
 function aimDir(run: Run): Dir | null {
   const p = run.player;
   const vis = visibleFrom(run.floor, p.x, p.y);
   let best: { d: Dir; dist: number } | null = null;
   for (const m of run.monsters) {
-    if (!hostile(m) || !vis.has(at(run.floor, m.x, m.y))) continue;
+    if (!hostile(m) || m.disguise || !vis.has(at(run.floor, m.x, m.y))) continue;
     const dx = m.x - p.x, dy = m.y - p.y;
     if (dx !== 0 && dy !== 0 && Math.abs(dx) !== Math.abs(dy)) continue;
     const dist = Math.max(Math.abs(dx), Math.abs(dy));
@@ -57,7 +72,8 @@ export function GameScreen({ run, settings, onSettings, onEnd, onSuspend, onGive
   const busy = useRef(false);
   const queued = useRef<{ a: Action; quick: boolean } | null>(null);
   const [, setVersion] = useState(0);
-  const [panel, setPanel] = useState<'none' | 'inv' | 'log' | 'menu' | 'help' | 'settings' | 'giveup'>('none');
+  const [panel, setPanel] = useState<'none' | 'inv' | 'log' | 'menu' | 'help' | 'settings' | 'giveup' | 'status'>('none');
+  const [info, setInfo] = useState<{ x: number; y: number } | null>(null);
   const [dirPick, setDirPick] = useState<{ title: string; action: Action } | null>(null);
   const [dashArmed, setDashArmed] = useState(false);
   const [faceMode, setFaceMode] = useState(false);
@@ -109,7 +125,19 @@ export function GameScreen({ run, settings, onSettings, onEnd, onSuspend, onGive
   // 開発中の確認用（本番のビルドには入らない）。?bot=1 で自動プレイ
   useEffect(() => {
     if (!import.meta.env.DEV) return undefined;
-    (window as unknown as { __game: unknown }).__game = { run, act: (a: Action) => act(a), renderer: () => rendererRef.current };
+    (window as unknown as { __game: unknown }).__game = {
+      run, act: (a: Action) => act(a), renderer: () => rendererRef.current,
+      // 好きな階へ移る（確認用）
+      goto: async (no: number) => {
+        const { enterFloor } = await import('../engine/run');
+        const { makeCtx, closeCtx } = await import('../engine/core');
+        const ctx = makeCtx(run);
+        enterFloor(ctx, no, []);
+        closeCtx(ctx);
+        rendererRef.current?.sync(run);
+        bump();
+      },
+    };
     if (!location.search.includes('bot')) return undefined;
     let alive = true;
     import('../../tests/bot').then(({ smartAction, mulberry }) => {
@@ -157,6 +185,7 @@ export function GameScreen({ run, settings, onSettings, onEnd, onSuspend, onGive
       if (k === ' ' || k === 'Enter') { e.preventDefault(); act({ t: 'attack' }); }
       else if (k === 'x' || e.code === 'Numpad5') act({ t: 'wait' });
       else if (k === 'r') act({ t: 'rest' }, true);
+      else if (k === 'c' && e.shiftKey) setPanel('status');
       else if (k === 'i') setPanel('inv');
       else if (k === 'g' || k === '>') act({ t: 'stairs' });
       else if (k === 'v') onItemAction({ t: 'shoot' });
@@ -196,7 +225,7 @@ export function GameScreen({ run, settings, onSettings, onEnd, onSuspend, onGive
       <header className="hud">
         <div className="hud-row">
           <span className="floor-chip">{run.floorNo}F</span>
-          <span className="band-name">{f.kind === 'boss' ? '天守の最上階' : BANDS[f.band].name}</span>
+          <span className="band-name">{f.kind === 'boss' ? '天守の最上階' : f.kind === 'town' ? '宿場（安全）' : BANDS[f.band].name}</span>
           <span className="lv">Lv{p.lv}</span>
           <span className="gold">{p.gold.toLocaleString()}文</span>
           <button className="menu-btn" onClick={() => setPanel('menu')} aria-label="メニュー">≡</button>
@@ -215,13 +244,21 @@ export function GameScreen({ run, settings, onSettings, onEnd, onSuspend, onGive
         )}
       </header>
       <div className="field" ref={boxRef}>
-        <canvas ref={canvasRef} className="field-canvas" />
+        <canvas ref={canvasRef} className="field-canvas" onClick={(e) => {
+          const r = rendererRef.current;
+          if (!r || busy.current) return;
+          const rect = (e.target as HTMLCanvasElement).getBoundingClientRect();
+          const t = r.tileAtPoint(e.clientX - rect.left, e.clientY - rect.top);
+          if (t) setInfo(t);
+        }} />
         <div className="msg-box" onClick={() => setPanel('log')}>
           {lines.map((l, i) => <div key={`${run.log.length}-${i}`} className={`msg ${l.c ?? ''} ${i < lines.length - 1 ? 'old' : ''}`}>{l.t}</div>)}
         </div>
         {(onStairs || foot) && !run.prompt && (
           <div className="field-actions">
-            {foot && !onStairs && <button className="float-btn" onClick={() => setPanel('inv')}>足元：{itemLabel(run, foot.item)}</button>}
+            {foot && !onStairs && (foot.item.shop
+              ? <button className="float-btn shop" onClick={() => act({ t: 'pickup' })}>拾う：{itemLabel(run, foot.item)}（{buyPrice(foot.item)}文）</button>
+              : <button className="float-btn" onClick={() => setPanel('inv')}>足元：{itemLabel(run, foot.item)}</button>)}
             {onStairs && <button className="float-btn stairs" onClick={() => act({ t: 'stairs' })}>▼ 階段を降りる</button>}
           </div>
         )}
@@ -229,9 +266,16 @@ export function GameScreen({ run, settings, onSettings, onEnd, onSuspend, onGive
       <div className="toolbar">
         <button onClick={() => setPanel('inv')}>道具</button>
         <button onClick={() => onItemAction({ t: 'shoot' })} disabled={!equipped(run, 'arrow')}>矢</button>
-        <button className={faceMode ? 'on' : ''} onClick={() => setFaceMode((v) => !v)}>向き</button>
+        <button className={faceMode ? 'on' : ''} onClick={() => {
+          if (!faceMode) {
+            // 向きを変える時は、まず一番近い敵の方を向いておく
+            const d = nearestEnemyDir(run);
+            if (d !== null) act({ t: 'face', dir: d });
+          }
+          setFaceMode((v) => !v);
+        }}>向き</button>
         <button onClick={() => { const r = rendererRef.current; if (r) { r.mini = ((r.mini + 1) % 3) as 0 | 1 | 2; bump(); } }}>地図</button>
-        <button onClick={() => act({ t: 'rest' }, true)}>休む</button>
+        <button onClick={() => setPanel('status')}>状態</button>
         <button onClick={() => setPanel('log')}>記録</button>
       </div>
       <Pad
@@ -282,9 +326,14 @@ export function GameScreen({ run, settings, onSettings, onEnd, onSuspend, onGive
           {aim !== null && <p className="note">光っている方向に敵がいます。</p>}
         </Modal>
       )}
-      {run.prompt && (
+      {panel === 'status' && <StatusPanel run={run} onClose={() => setPanel('none')} />}
+      {info && <TileInfo run={run} x={info.x} y={info.y} onClose={() => setInfo(null)} />}
+      {run.prompt && run.prompt.kind === 'npc' && <NpcDialog run={run} who={run.prompt.who} act={(a) => act(a)} />}
+      {run.prompt && run.prompt.kind !== 'npc' && (
         <Modal title={run.prompt.kind === 'pay' ? 'お支払い' : '買い取り'}>
           <p>{run.prompt.kind === 'pay' ? `店主「お代は${run.prompt.amount}文になります。お支払いになりますか？」（所持金 ${p.gold}文）` : `店主「${run.prompt.amount}文で買い取りましょう。よろしいですか？」`}</p>
+          {run.prompt.kind === 'sell' && (() => { const uid = (run.prompt as { itemUid: number }).itemUid; const fi = f.items.find((x) => x.item.uid === uid); return fi ? <PriceHint run={run} item={fi.item} mode="sell" /> : null; })()}
+          {run.prompt.kind === 'pay' && <p className="note">払わずに逃げると、店主が追ってくる。階段を降りれば逃げ切れる。</p>}
           <div className="row-buttons">
             {run.prompt.kind === 'pay' && <button className="danger" onClick={() => { playSe('menu'); act({ t: 'answer', yes: false, steal: true }); }}>払わずに逃げる</button>}
             <button onClick={() => { playSe('menu'); act({ t: 'answer', yes: false }); }}>{run.prompt.kind === 'pay' ? 'やめる' : 'いいえ'}</button>

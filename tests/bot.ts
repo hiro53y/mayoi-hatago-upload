@@ -116,7 +116,7 @@ function exploreTarget(run: Run, dist: Int16Array): number | null {
 }
 
 /** 目的のマスへの1歩（距離の地図を目的地から引く） */
-function stepTo(run: Run, target: number): Dir | null {
+function stepTo(run: Run, target: number, allowUid = -1): Dir | null {
   const f = run.floor;
   const p = run.player;
   const tx = target % f.w, ty = Math.floor(target / f.w);
@@ -127,7 +127,7 @@ function stepTo(run: Run, target: number): Dir | null {
     const x = p.x + DX[d], y = p.y + DY[d];
     const v = back[at(f, x, y)];
     if (v < 0 || v >= bestV || !cornerOk(f, p.x, p.y, d as Dir)) continue;
-    if (run.monsters.some((m) => m.x === x && m.y === y && (m.role === 'keeper' || !hostile(m)) && !m.ally)) continue;
+    if (run.monsters.some((m) => m.x === x && m.y === y && (m.role === 'keeper' || !hostile(m)) && !m.ally && m.uid !== allowUid)) continue;
     bestV = v;
     best = d as Dir;
   }
@@ -137,7 +137,23 @@ function stepTo(run: Run, target: number): Dir | null {
 export function smartAction(run: Run, rand: Rand): Action {
   const p = run.player;
   const f = run.floor;
-  if (run.prompt) return { t: 'answer', yes: run.prompt.kind === 'pay' ? p.gold >= run.prompt.amount : true };
+  if (run.prompt) {
+    const pr = run.prompt;
+    if (pr.kind === 'npc') {
+      if (pr.who === 'inn' && p.hp < p.maxHp * 0.9 && p.gold >= pr.cost) return { t: 'npc', who: 'inn' };
+      return { t: 'answer', yes: false };
+    }
+    return { t: 'answer', yes: pr.kind === 'pay' ? p.gold >= pr.amount : true };
+  }
+  // 宿場：傷んでいてお金があれば宿に泊まる
+  if (f.kind === 'town' && p.hp < p.maxHp * 0.9) {
+    const inn = run.monsters.find((m) => m.npc === 'inn');
+    if (inn && p.gold >= 80 + run.floorNo * 15) {
+      if (cheb(inn, p) === 1) return { t: 'move', dir: dirTo(p, inn)! };
+      const d = stepTo(run, at(f, inn.x, inn.y), inn.uid);
+      if (d !== null) return { t: 'move', dir: d };
+    }
+  }
   // 払えない店の品は置いていく
   const unpaid = p.inv.find((i) => i.shop);
   if (unpaid && !f.items.some((fi) => fi.x === p.x && fi.y === p.y)) return { t: 'item', uid: unpaid.uid, verb: 'drop' };
@@ -222,7 +238,11 @@ export function smartAction(run: Run, rand: Rand): Action {
       if (d !== null) return { t: 'move', dir: d };
     }
   }
-  if (p.hp < p.maxHp * 0.6 && rand() < 0.5) return { t: 'wait' };
+  if (p.hp < p.maxHp * 0.6 && p.hunger > 35) {
+    const visHostile = run.monsters.some((m) => hostile(m) && !m.disguise && vis.has(at(f, m.x, m.y)));
+    if (!visHostile) return { t: 'rest' };
+    if (rand() < 0.5) return { t: 'wait' };
+  }
   // 探索か、階段へ
   const explore = f.turns < 400 ? exploreTarget(run, dist) : null;
   const goal = explore ?? (s && f.seen[at(f, s.x, s.y)] ? at(f, s.x, s.y) : exploreTarget(run, dist));
@@ -237,7 +257,15 @@ export function smartAction(run: Run, rand: Rand): Action {
 
 export function randomAction(run: Run, rand: Rand): Action {
   const p = run.player;
-  if (run.prompt) return { t: 'answer', yes: rand() < 0.5, steal: rand() < 0.25 };
+  if (run.prompt) {
+    if (run.prompt.kind === 'npc' && rand() < 0.7) {
+      const who = run.prompt.who;
+      const target = p.inv[Math.floor(rand() * Math.max(1, p.inv.length))];
+      return { t: 'npc', who, target: target?.uid, gold: rand() < 0.2 };
+    }
+    return { t: 'answer', yes: rand() < 0.5, steal: rand() < 0.25 };
+  }
+  if (rand() < 0.01) return { t: 'sort' };
   const dir = Math.floor(rand() * 8) as Dir;
   const roll = rand();
   const pickItem = () => p.inv[Math.floor(rand() * p.inv.length)];

@@ -2,15 +2,15 @@
 import { itemDef } from '../content/items';
 import { chance, int } from './rng';
 import { at, canStand, cheb, cornerOk, doorRoom, inside, isWall, monsterAt, roomAt, updateSight, visibleFrom } from './geo';
-import { buyPrice, charmIs, closeCtx, ev, hasSeal, log, makeCtx, type Ctx } from './core';
-import { hostile, hurtPlayer, makeThief, maybeSpawn, onEnterRoom, teleportPlayer } from './actors';
+import { buyPrice, charmIs, closeCtx, ev, hasSeal, itemName, log, makeCtx, type Ctx } from './core';
+import { hostile, hurtPlayer, identify, makeThief, maybeSpawn, onEnterRoom, teleportPlayer } from './actors';
 import { attackMonster, playerMelee } from './combat';
 import {
   dropItem, equipItem, findInv, keeperCalm, pickUp, putInPot, shootArrow, swapFoot, takeFromPot, throwItem, triggerTrap, unequipItem, useItem, type Took,
 } from './effects';
 import { monstersPhase, tickMonsterStatus } from './ai';
 import { descend } from './run';
-import { DX, DY, type Action, type Dir, type GameEvent, type Item, type Run } from './types';
+import { DX, DY, type Action, type Dir, type GameEvent, type Item, type NpcKind, type Run } from './types';
 
 export function incapacitated(run: Run): boolean {
   const st = run.player.st;
@@ -35,6 +35,7 @@ export function step(run: Run, action: Action): GameEvent[] {
   const ctx = makeCtx(run);
   if (run.prompt) {
     if (action.t === 'answer') answerPrompt(ctx, action.yes, !!action.steal);
+    else if (action.t === 'npc' && run.prompt.kind === 'npc') npcAction(ctx, action);
     finish(ctx);
     return ctx.ev;
   }
@@ -61,6 +62,7 @@ function answerPrompt(ctx: Ctx, yes: boolean, steal = false) {
   const run = ctx.run;
   const prompt = run.prompt!;
   run.prompt = null;
+  if (prompt.kind === 'npc') { log(ctx, `${NPC_NAME[prompt.who]}「またどうぞ」`); return; }
   if (prompt.kind === 'pay') {
     if (steal) {
       // 払わずに飛び出す：泥棒になり、店主と番人が追ってくる
@@ -99,7 +101,12 @@ function playerAction(ctx: Ctx, a: Action): Took {
   switch (a.t) {
     case 'move': return move(ctx, confusedDir(ctx, a.dir), false);
     case 'face': p.dir = a.dir; return 'free';
-    case 'attack': p.dir = confusedDir(ctx, p.dir); playerMelee(ctx); return 'turn';
+    case 'attack':
+      if (p.st.confuse) p.dir = confusedDir(ctx, p.dir);
+      else autoFace(ctx);
+      playerMelee(ctx);
+      return 'turn';
+    case 'sort': sortInventory(run); return 'free';
     case 'wait': return 'turn';
     case 'pickup': return pickUp(ctx) ? 'turn' : 'free';
     case 'stairs': {
@@ -169,6 +176,16 @@ function move(ctx: Ctx, dir: Dir, dashing: boolean): Took {
       afterStep(ctx, dashing);
       return 'turn';
     }
+    if (m.role === 'npc' && m.npc) {
+      run.prompt = { kind: 'npc', who: m.npc, cost: npcCost(run, m.npc) };
+      log(ctx, NPC_GREETING[m.npc], 'info');
+      return 'free';
+    }
+    if (m.disguise) {
+      if (dashing) return 'free';
+      attackMonster(ctx, m);
+      return 'turn';
+    }
     if (m.role === 'keeper' && !m.angry) {
       // 店主とはすれ違える（店の中のマスどうしだけ）
       const keeperRoom = roomAt(f, tx, ty);
@@ -228,12 +245,93 @@ function afterStep(ctx: Ctx, dashing: boolean) {
   onEnterRoom(ctx);
 }
 
+// ── 宿場の人 ──
+
+const NPC_NAME: Record<NpcKind, string> = { inn: '宿の主人', bank: '倉庫番', seer: '辻占い' };
+const NPC_GREETING: Record<NpcKind, string> = {
+  inn: '宿の主人「長旅お疲れさまです。ひと晩いかがですか」',
+  bank: '倉庫番「お預かりした物は、村の倉庫へ確かにお届けします」',
+  seer: '辻占い「どれ、その道具の正体を占ってしんぜよう」',
+};
+
+export function npcCost(run: Run, who: NpcKind): number {
+  if (who === 'inn') return 80 + run.floorNo * 15;
+  if (who === 'seer') return 100 + run.floorNo * 5;
+  return 0;
+}
+
+function npcAction(ctx: Ctx, a: Extract<Action, { t: 'npc' }>) {
+  const run = ctx.run;
+  const p = run.player;
+  const cost = npcCost(run, a.who);
+  if (a.who === 'inn') {
+    if (p.gold < cost) { log(ctx, `宿の主人「お代が${cost}文、足りないようですな」`, 'bad'); return; }
+    p.gold -= cost;
+    p.hp = p.maxHp;
+    p.hunger = p.maxHunger;
+    p.st = {};
+    p.str = Math.max(p.str, p.maxStr);
+    log(ctx, `${cost}文を払って泊まった。ぐっすり眠って、すっかり元気になった！`, 'good');
+    ev(ctx, { k: 'flash', color: '#fff2c0' });
+    ev(ctx, { k: 'se', name: 'revive' });
+    run.prompt = null;
+    return;
+  }
+  if (a.who === 'bank') {
+    if (a.gold) {
+      if (p.gold <= 0) { log(ctx, '預けるお金を持っていない。'); return; }
+      run.depositGold = (run.depositGold ?? 0) + p.gold;
+      log(ctx, `${p.gold}文を倉庫番に預けた。（村の蓄えに届く）`, 'good');
+      p.gold = 0;
+      return;
+    }
+    const item = p.inv.find((i) => i.uid === a.target);
+    if (!item) return;
+    if (item.shop) { log(ctx, '倉庫番「お店の品はお預かりできません」'); return; }
+    if (Object.values(p.eq).includes(item.uid) && item.cursed) { log(ctx, '呪われていて手放せない！', 'bad'); return; }
+    for (const slot of ['weapon', 'armor', 'charm', 'arrow'] as const) if (p.eq[slot] === item.uid) delete p.eq[slot];
+    p.inv.splice(p.inv.indexOf(item), 1);
+    (run.deposit ??= []).push(item);
+    log(ctx, `${itemName(run, item)}を預けた。（村の倉庫に届く）`, 'good');
+    return;
+  }
+  // 辻占い
+  const item = p.inv.find((i) => i.uid === a.target);
+  if (!item) return;
+  if (p.gold < cost) { log(ctx, `辻占い「見料が${cost}文、足りぬようじゃ」`, 'bad'); return; }
+  p.gold -= cost;
+  identify(ctx, item);
+}
+
+/** 向いた先に敵がおらず、隣の敵が1体だけなら、その敵の方を向く */
+function autoFace(ctx: Ctx) {
+  const run = ctx.run;
+  const p = run.player;
+  const ahead = monsterAt(run, p.x + DX[p.dir], p.y + DY[p.dir]);
+  if (ahead && hostile(ahead)) return;
+  const around: Dir[] = [];
+  for (let d = 0; d < 8; d++) {
+    const m = monsterAt(run, p.x + DX[d], p.y + DY[d]);
+    if (m && hostile(m) && !m.disguise && cornerOk(run.floor, p.x, p.y, d as Dir) && !isWall(run.floor, m.x, m.y)) around.push(d as Dir);
+  }
+  if (around.length === 1) p.dir = around[0];
+}
+
+const SORT_ORDER = ['weapon', 'armor', 'charm', 'arrow', 'staff', 'scroll', 'grass', 'food', 'pot'];
+
+export function sortInventory(run: Run) {
+  run.player.inv.sort((a, b) => {
+    const ca = SORT_ORDER.indexOf(itemDef(a.id).cat), cb = SORT_ORDER.indexOf(itemDef(b.id).cat);
+    return ca - cb || a.id.localeCompare(b.id) || a.uid - b.uid;
+  });
+}
+
 // ── ダッシュと休む ──
 
 function hostilesInSight(run: Run): Set<number> {
   const vis = visibleFrom(run.floor, run.player.x, run.player.y);
   const out = new Set<number>();
-  for (const m of run.monsters) if (hostile(m) && vis.has(at(run.floor, m.x, m.y))) out.add(m.uid);
+  for (const m of run.monsters) if (hostile(m) && !m.disguise && vis.has(at(run.floor, m.x, m.y))) out.add(m.uid);
   return out;
 }
 
@@ -332,7 +430,7 @@ function endOfTurn(ctx: Ctx) {
   f.turns += 1;
   if (run.timeStop) run.timeStop -= 1;
   // お腹
-  let rate = 0.1;
+  let rate = 0.085;
   if (hasSeal(run, '腹')) rate *= 0.5;
   if (charmIs(run, 'c_haramochi')) rate *= 0.5;
   if (charmIs(run, 'c_kaifuku')) rate *= 1.5;
@@ -360,6 +458,7 @@ function endOfTurn(ctx: Ctx) {
   if (st.fast) { st.fast -= 1; if (!st.fast) log(ctx, '倍速が切れた。'); }
   if (st.invincible) { st.invincible -= 1; if (!st.invincible) log(ctx, '無敵が切れた。'); }
   if (st.blind) st.blind -= 1;
+  if (st.hidden) { st.hidden -= 1; if (!st.hidden) log(ctx, '姿が元に戻った。'); }
   if (st.stuck && chance(ctx.r, 0.15)) st.stuck = Math.max(0, st.stuck - 1);
   // 迷いのお守り
   if (charmIs(run, 'c_mayoi') && chance(ctx.r, 0.02)) {
@@ -374,7 +473,7 @@ function endOfTurn(ctx: Ctx) {
   const room = roomAt(f, p.x, p.y);
   if ((!room || room.kind !== 'shop') && unpaid(run).length && f.shop) makeThief(ctx);
   // 長居すると突風が吹く
-  if (f.kind !== 'boss') {
+  if (f.kind !== 'boss' && f.kind !== 'town') {
     if (f.turns === 1000) log(ctx, '遠くから風の音が聞こえてくる……', 'warn');
     if (f.turns === 1150) log(ctx, '風が強くなってきた！ 早く階段を探そう。', 'warn');
     if (f.turns >= 1250 && !run.end) {

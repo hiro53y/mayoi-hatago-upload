@@ -5,8 +5,7 @@ import { isEquipped, typeKnown } from '../engine/core';
 import { MAX_INV } from '../engine/actors';
 import type { Action, Item, Run } from '../engine/types';
 import { ItemIcon, Modal, itemDescription, itemLabel, priceOf } from './common';
-
-const CAT_ORDER = ['weapon', 'armor', 'charm', 'arrow', 'staff', 'scroll', 'grass', 'food', 'pot', 'gold'];
+import { PriceHint } from './Panels';
 
 type Sub =
   | { k: 'list' }
@@ -24,7 +23,7 @@ export function Inventory({ run, onAction, onClose }: { run: Run; onAction: (a: 
   // 選んでいた物が無くなっていたら一覧に戻る
   const exists = (uid: number) => p.inv.some((i) => i.uid === uid);
   const sub: Sub = 'uid' in state && !exists(state.uid) ? { k: 'list' } : state.k === 'put' && !exists(state.potUid) ? { k: 'list' } : state;
-  const items = [...p.inv].sort((a, b) => CAT_ORDER.indexOf(itemDef(a.id).cat) - CAT_ORDER.indexOf(itemDef(b.id).cat));
+  const items = [...p.inv];
   const find = (uid: number) => p.inv.find((i) => i.uid === uid) ?? null;
   const foot = run.floor.items.find((fi) => fi.x === p.x && fi.y === p.y);
   const act = (a: Action) => { onAction(a); onClose(); };
@@ -45,6 +44,7 @@ export function Inventory({ run, onAction, onClose }: { run: Run; onAction: (a: 
     return (
       <Modal title={`持ち物 ${p.inv.length}/${MAX_INV}`} onClose={onClose} className="inventory">
         {items.length === 0 && <p className="empty">何も持っていない。</p>}
+        {items.length > 1 && <div className="row-buttons top"><button className="small" onClick={() => onAction({ t: 'sort' })}>整頓</button></div>}
         <div className="inv-list">{items.map((item) => row(item, () => setSub({ k: 'detail', uid: item.uid })))}</div>
         {foot && (
           <div className="foot-box">
@@ -165,6 +165,7 @@ export function Inventory({ run, onAction, onClose }: { run: Run; onAction: (a: 
           <div className="cat-chip">{CAT_NAME[def.cat]}{eq ? '・装備中' : ''}</div>
           <p className="desc">{itemDescription(run, item)}</p>
           {item.shop && <p className="price">店の品：{priceOf(item)}文（まだ払っていない）</p>}
+          {item.shop && <PriceHint run={run} item={item} />}
         </div>
       </div>
       <div className="verb-grid">

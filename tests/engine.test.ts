@@ -334,11 +334,20 @@ describe('店', () => {
     return { run, keeper, goods };
   };
 
+  it('店の品は乗っただけでは拾わず、「拾う」で手に取る', () => {
+    const { run, goods } = shopRun();
+    act(run, { t: 'move', dir: 2 });
+    expect(run.player.inv).not.toContain(goods);
+    expect(logText(run)).toContain('「拾う」で手に取る');
+    act(run, { t: 'pickup' });
+    expect(run.player.inv).toContain(goods);
+  });
+
   it('品物を持って出ようとすると代金を求められ、払えば出られる', () => {
     const { run, goods } = shopRun();
     run.player.gold = 1000;
-    act(run, { t: 'move', dir: 2 }); // 拾う
-    expect(run.player.inv).toContain(goods);
+    act(run, { t: 'move', dir: 2 });
+    act(run, { t: 'pickup' });
     act(run, { t: 'move', dir: 2 }); // 24,10
     act(run, { t: 'move', dir: 2 }); // 出口へ
     expect(run.prompt?.kind).toBe('pay');
@@ -350,9 +359,10 @@ describe('店', () => {
     expect(run.thief).toBe(false);
   });
 
-  it('払わずに逃げると泥棒になり、店主が怒って追ってくる', () => {
+  it('払わずに逃げると店主が等速で追ってくる。番人は出ず、次の階には来ない', () => {
     const { run, keeper, goods } = shopRun();
     act(run, { t: 'move', dir: 2 });
+    act(run, { t: 'pickup' });
     act(run, { t: 'move', dir: 2 });
     act(run, { t: 'move', dir: 2 });
     expect(run.prompt?.kind).toBe('pay');
@@ -361,7 +371,29 @@ describe('店', () => {
     expect(keeper.angry).toBe(true);
     expect(goods.shop).toBe(false);
     expect(run.player.x).toBe(25);
-    expect(run.monsters.filter((m) => m.role === 'guard').length).toBeGreaterThan(0);
+    expect(run.monsters.filter((m) => m.role !== 'keeper')).toHaveLength(0);
+    // 等速：まっすぐ逃げ続けると距離は縮まらない
+    const gap = () => Math.max(Math.abs(keeper.x - run.player.x), Math.abs(keeper.y - run.player.y));
+    act(run, { t: 'move', dir: 2 });
+    const g1 = gap();
+    act(run, { t: 'move', dir: 2 });
+    act(run, { t: 'move', dir: 2 });
+    expect(gap()).toBeGreaterThanOrEqual(g1);
+    // 階段を降りれば店主はいない
+    run.floor.stairs = { x: run.player.x, y: run.player.y };
+    act(run, { t: 'stairs' });
+    expect(run.floorNo).toBe(2);
+    expect(run.monsters.some((m) => m.role === 'keeper' && m.angry)).toBe(false);
+  });
+
+  it('敵は店の中に入ってこない（通路で待つ）', () => {
+    const { run } = shopRun();
+    const m = spawn(run, 'tanuki1', 28, 10);
+    for (let i = 0; i < 15; i++) act(run, { t: 'wait' });
+    expect(m.x).toBeGreaterThanOrEqual(25);
+    const ghost = spawn(run, 'kage1', 27, 8);
+    for (let i = 0; i < 15; i++) act(run, { t: 'wait' });
+    expect(run.floor.roomOf[at(run.floor, ghost.x, ghost.y)]).not.toBe(0);
   });
 
   it('店の中で自分の物を置くと買い取ってもらえる', () => {

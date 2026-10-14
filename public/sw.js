@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'fushigina-dungeon-modoki-v5-20261014';
+const CACHE_VERSION = 'fushigina-dungeon-modoki-v6-20261015';
 const APP_SHELL = ['/', '/index.html', '/manifest.webmanifest'];
 
 self.addEventListener('install', (event) => {

@@ -104,6 +104,10 @@ export interface Summary {
   newTitles: string[];
   unlockedDeep: boolean;
   dailyBest?: boolean;
+  /** 宿場で預けた物（倒れても届く） */
+  deposited: Item[];
+  depositGold: number;
+  highlights: { kills: number; lv: number; turns: number; maxHit: number; weapon: string | null; allies: number };
 }
 
 /** 冒険の終わり：持ち帰り・図鑑・記録・称号 */
@@ -136,6 +140,22 @@ export function finishRun(meta: Meta, run: Run, now = new Date()): Summary {
   } else {
     lost.push(...p.inv);
   }
+  // 宿場の倉庫番に預けた物とお金は、どんな終わり方でも届く
+  const deposited: Item[] = [];
+  for (const item of run.deposit ?? []) {
+    const copy = JSON.parse(JSON.stringify(item)) as Item;
+    copy.uid = meta.nextUid++;
+    for (const inner of copy.contents ?? []) inner.uid = meta.nextUid++;
+    copy.known = true;
+    if (meta.storage.length < STORAGE_MAX) { meta.storage.push(copy); deposited.push(copy); } else lost.push(copy);
+  }
+  const depositGold = run.depositGold ?? 0;
+  meta.gold += depositGold;
+  const weaponItem = p.inv.find((i) => i.uid === p.eq.weapon);
+  const highlights = {
+    kills: run.stats.kills, lv: p.lv, turns: run.turn, maxHit: run.stats.maxHit ?? 0, allies: run.stats.allies,
+    weapon: weaponItem ? `${itemDef(weaponItem.id).name}${weaponItem.plus ? (weaponItem.plus > 0 ? `+${weaponItem.plus}` : weaponItem.plus) : ''}` : null,
+  };
   // 記録
   const rec: RunRecord = { at: now.toISOString(), mode: run.mode, kind: end.kind, cause: end.cause, floor: end.floor, lv: p.lv, kills: run.stats.kills, turns: run.turn };
   let score: number | undefined;
@@ -160,7 +180,7 @@ export function finishRun(meta: Meta, run: Run, now = new Date()): Summary {
   let unlockedDeep = false;
   if (run.mode === 'main' && end.kind === 'clear' && !meta.deepUnlocked) { meta.deepUnlocked = true; unlockedDeep = true; }
   const newTitles = checkTitles(meta, run);
-  return { kind: end.kind, cause: end.cause, floor: end.floor, mode: run.mode, kept, lost, gold, score, newTitles, unlockedDeep, dailyBest };
+  return { kind: end.kind, cause: end.cause, floor: end.floor, mode: run.mode, kept, lost, gold, score, newTitles, unlockedDeep, dailyBest, deposited, depositGold, highlights };
 }
 
 function checkTitles(meta: Meta, run: Run): string[] {

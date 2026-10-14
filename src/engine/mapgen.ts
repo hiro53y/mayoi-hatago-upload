@@ -3,12 +3,12 @@ import { NORMAL_MONSTERS } from '../content/monsters';
 import { ITEMS, itemDef, type ItemDef } from '../content/items';
 import { TRAPS } from '../content/world';
 import { chance, int, range, shuffle, weighted, type Rng } from './rng';
-import { T_FLOOR, T_HARD, T_LAVA, T_WALL, T_WATER, type Floor, type Item, type ItemCat, type Pos, type Room, type RunMode, type Trap } from './types';
+import { T_FLOOR, T_HARD, T_LAVA, T_WALL, T_WATER, type Floor, type Item, type NpcKind, type ItemCat, type Pos, type Room, type RunMode, type Trap } from './types';
 
 export const MAP_W = 56;
 export const MAP_H = 32;
 
-export interface MonsterSpawn { id: string; x: number; y: number; asleep: boolean; role?: 'keeper' | 'boss' }
+export interface MonsterSpawn { id: string; x: number; y: number; asleep: boolean; role?: 'keeper' | 'boss' | 'npc'; npc?: NpcKind }
 
 export interface GenResult { floor: Floor; spawns: MonsterSpawn[]; start: Pos }
 
@@ -21,7 +21,10 @@ export interface GenOptions {
   liquid: 'water' | 'lava' | null;
   /** 最終階（ボスの部屋） */
   boss: boolean;
-  /** 深層は未識別だらけ・店が少ない */
+  /** 宿場（中継の安全な階） */
+  town?: boolean;
+  /** 根切りの巻物で消した敵 */
+  banned?: Record<string, true>;
   newUid: () => number;
 }
 
@@ -194,7 +197,7 @@ function addLiquid(floor: Floor, r: Rng, kind: 'water' | 'lava') {
 /** 階の強さに合った道具の種類 */
 export function randomItemDef(r: Rng, danger: number, cats?: ItemCat[]): ItemDef {
   const catWeights: [ItemCat, number][] = [
-    ['grass', 22], ['scroll', 19], ['food', 12], ['weapon', 7], ['armor', 7], ['staff', 8], ['pot', 7], ['charm', 4], ['arrow', 6],
+    ['grass', 22], ['scroll', 19], ['food', 15], ['weapon', 7], ['armor', 7], ['staff', 8], ['pot', 7], ['charm', 4], ['arrow', 6],
   ];
   const usable = cats ? catWeights.filter(([c]) => cats.includes(c)) : catWeights;
   const cat = weighted(r, usable, ([, w]) => w)![0];
@@ -222,17 +225,19 @@ export function makeItem(r: Rng, def: ItemDef, uid: number, danger: number): Ite
   return item;
 }
 
-export function randomMonsterId(r: Rng, danger: number): string {
+export function randomMonsterId(r: Rng, danger: number, banned: Record<string, true> = {}): string {
+  const pool = NORMAL_MONSTERS.filter((m) => !banned[m.id]);
+  if (!pool.length) return NORMAL_MONSTERS[0].id;
   if (danger > 30) {
-    const pick = weighted(r, NORMAL_MONSTERS, (m) => (m.tier === 3 ? 4 : m.tier === 2 ? 2 : 0.4));
+    const pick = weighted(r, pool, (m) => (m.tier === 3 ? 4 : m.tier === 2 ? 2 : 0.4));
     return pick!.id;
   }
   // 今の階より少し強い敵まで。弱い敵も少しずつ混ざる
-  const pick = weighted(r, NORMAL_MONSTERS, (m) => {
+  const pick = weighted(r, pool, (m) => {
     if (m.lv > danger + 2 || m.lv < danger - 10) return 0;
     return Math.max(0.6, 6 - Math.abs(danger - m.lv) * 0.7);
   });
-  return (pick ?? NORMAL_MONSTERS[0]).id;
+  return (pick ?? pool[0]).id;
 }
 
 export function generateFloor(r: Rng, o: GenOptions): GenResult {
@@ -252,7 +257,7 @@ export function generateFloor(r: Rng, o: GenOptions): GenResult {
       const spot = freeTilesInRoom(floor, room, taken).filter((p) => p.y < room.y + 6);
       const p = spot[int(r, spot.length)];
       taken.add(idx(p.x, p.y));
-      spawns.push({ id: randomMonsterId(r, o.danger), x: p.x, y: p.y, asleep: false });
+      spawns.push({ id: randomMonsterId(r, o.danger, o.banned), x: p.x, y: p.y, asleep: false });
     }
     // 回復の足しになる道具を少し
     for (let i = 0; i < 3; i++) {
@@ -263,6 +268,8 @@ export function generateFloor(r: Rng, o: GenOptions): GenResult {
     }
     return { floor, spawns, start };
   }
+
+  if (o.town) return townFloor(floor, r, o, taken, spawns);
 
   const big = o.mode !== 'practice' && o.no > 2 && chance(r, 0.05);
   if (big) { floor.kind = 'big'; bigRoom(floor); } else layoutRooms(floor, r);
@@ -294,7 +301,7 @@ export function generateFloor(r: Rng, o: GenOptions): GenResult {
     for (let i = 0; i < count; i++) {
       const p = spots.pop()!;
       taken.add(idx(p.x, p.y));
-      spawns.push({ id: randomMonsterId(r, o.danger), x: p.x, y: p.y, asleep: true });
+      spawns.push({ id: randomMonsterId(r, o.danger, o.banned), x: p.x, y: p.y, asleep: true });
     }
     for (let i = 0; i < range(r, 3, 6) && spots.length; i++) {
       const p = spots.pop()!;
@@ -332,6 +339,16 @@ export function generateFloor(r: Rng, o: GenOptions): GenResult {
     floor.traps.push(trap);
   }
 
+  // 店のある階には、壁を掘る道具を1つずつ（店の外に置く）
+  if (floor.shop) {
+    for (const id of ['w_tsuruhashi', 't_kussaku']) {
+      const p = randomSpot();
+      if (!p) break;
+      taken.add(idx(p.x, p.y));
+      floor.items.push({ x: p.x, y: p.y, item: makeItem(r, itemDef(id), o.newUid(), o.danger) });
+    }
+  }
+
   // 道具とお金
   const itemCount = range(r, 4, 7) + (o.mode === 'practice' ? 2 : 0);
   for (let i = 0; i < itemCount; i++) {
@@ -353,7 +370,36 @@ export function generateFloor(r: Rng, o: GenOptions): GenResult {
     const p = randomSpot(startRoom);
     if (!p) break;
     taken.add(idx(p.x, p.y));
-    spawns.push({ id: randomMonsterId(r, o.danger), x: p.x, y: p.y, asleep: chance(r, 0.4) });
+    spawns.push({ id: randomMonsterId(r, o.danger, o.banned), x: p.x, y: p.y, asleep: chance(r, 0.4) });
+  }
+  return { floor, spawns, start };
+}
+
+/** 宿場：広場に宿・倉庫番・辻占い、北に店。敵も罠も無い */
+function townFloor(floor: Floor, r: Rng, o: GenOptions, taken: Set<number>, spawns: MonsterSpawn[]): GenResult {
+  floor.kind = 'town';
+  const plaza: Room = { id: 0, x: 8, y: 13, w: 40, h: 12, kind: 'normal', lit: true };
+  const shopRoom: Room = { id: 1, x: 22, y: 3, w: 12, h: 6, kind: 'normal', lit: true };
+  carveRoom(floor, plaza);
+  carveRoom(floor, shopRoom);
+  for (let y = shopRoom.y + shopRoom.h; y < plaza.y; y++) carve(floor, 28, y);
+  // 広場の池（眺め）
+  for (const [x, y] of [[42, 21], [43, 21], [42, 22], [43, 22], [44, 22]]) floor.tiles[idx(x, y)] = T_WATER;
+  makeShop(floor, r, shopRoom, o, taken, spawns);
+  const start = { x: 11, y: 22 };
+  taken.add(idx(start.x, start.y));
+  floor.stairs = { x: 45, y: 16 };
+  taken.add(idx(45, 16));
+  const npcs: [NpcKind, number, number][] = [['inn', 13, 14], ['bank', 19, 14], ['seer', 37, 14]];
+  for (const [who, x, y] of npcs) {
+    spawns.push({ id: who, x, y, asleep: false, role: 'npc', npc: who });
+    taken.add(idx(x, y));
+  }
+  for (const id of ['w_tsuruhashi', 't_kussaku']) {
+    const spots = freeTilesInRoom(floor, plaza, taken).filter((p) => p.y >= 19);
+    const p = spots[int(r, spots.length)];
+    taken.add(idx(p.x, p.y));
+    floor.items.push({ x: p.x, y: p.y, item: makeItem(r, itemDef(id), o.newUid(), o.danger) });
   }
   return { floor, spawns, start };
 }

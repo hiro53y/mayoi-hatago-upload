@@ -3,8 +3,8 @@ import { monDef } from '../content/monsters';
 import { chance, int, range } from './rng';
 import { at, canStand, cheb, cornerOk, distanceField, dirTo, isWall, lineDir, monsterAt, moveKind, roomAt, visibleFrom, type MoveKind } from './geo';
 import { ev, log, type Ctx } from './core';
-import { hostile, hurtPlayer, spawnNear } from './actors';
-import { monsterHitsMonster, monsterHitsPlayer, rangedAbility, trace } from './combat';
+import { hostile, hurtPlayer, revealDisguise, spawnNear } from './actors';
+import { monsterHitsMonster, monsterHitsPlayer, rangedAbility, scorch, trace } from './combat';
 import { randomMonsterId } from './mapgen';
 import { dangerOf } from '../content/world';
 import { DIRS, DX, DY, type Dir, type Monster, type Pos } from './types';
@@ -31,7 +31,13 @@ function free(ctx: Ctx, m: Monster, x: number, y: number): boolean {
   if (run.player.x === x && run.player.y === y) return false;
   if (monsterAt(run, x, y)) return false;
   if (!m.ally && sanctuary(ctx, x, y)) return false;
+  if (!m.ally && m.role !== 'keeper' && inShop(ctx, x, y) && !inShop(ctx, m.x, m.y)) return false;
   return true;
+}
+
+/** 店の部屋のマスか */
+function inShop(ctx: Ctx, x: number, y: number): boolean {
+  return roomAt(ctx.run.floor, x, y)?.kind === 'shop';
 }
 
 function moveTo(ctx: Ctx, m: Monster, x: number, y: number) {
@@ -72,6 +78,8 @@ function stepToward(ctx: Ctx, m: Monster, goal: Pos, away = false): boolean {
 /** 部屋の中か出入り口からなら部屋全体、通路なら周り1マスが見える */
 function seesPlayer(ctx: Ctx, m: Monster): boolean {
   const run = ctx.run;
+  // 姿隠し：隣にいても気づかれにくい
+  if (run.player.st.hidden) return cheb(m, run.player) <= 1 && chance(ctx.r, 0.25);
   if (cheb(m, run.player) <= 1) return true;
   if (run.floor.dark || run.floor.fog) return cheb(m, run.player) <= (run.floor.fog ? 2 : 1);
   const vis = visibleFrom(run.floor, m.x, m.y);
@@ -107,12 +115,24 @@ export function monsterAct(ctx: Ctx, m: Monster) {
   if (st.sleep) { st.sleep -= 1; return; }
   if (def.ability.k === 'regen' && !st.sealed && m.hp < m.maxHp) m.hp = Math.min(m.maxHp, m.hp + def.ability.n);
   if (m.ally) { allyAct(ctx, m); return; }
+  if (m.role === 'npc') {
+    const d = dirTo(m, run.player);
+    if (d !== null && cheb(m, run.player) <= 3) m.dir = d;
+    return;
+  }
+  // 身代わりは自分では動かない
+  if (st.decoy) return;
   if (m.role === 'keeper' && !m.angry) {
     const d = dirTo(m, run.player);
     if (d !== null && cheb(m, run.player) <= 4) m.dir = d;
     return;
   }
   const p = run.player;
+  // 化け狸：隣に来たら正体を現す
+  if (m.disguise) {
+    if (cheb(m, p) <= 1) revealDisguise(ctx, m);
+    return;
+  }
   if (!m.awake) {
     const sameRoom = roomAt(run.floor, m.x, m.y) && roomAt(run.floor, m.x, m.y) === roomAt(run.floor, p.x, p.y);
     const near = cheb(m, p) <= 1;
@@ -142,15 +162,27 @@ export function monsterAct(ctx: Ctx, m: Monster) {
     }
     return;
   }
+  // 身代わりがいれば、そちらを狙う
+  const decoy = run.monsters.find((o) => o !== m && !o.dead && o.st.decoy && cheb(o, m) <= 8);
+  if (decoy) {
+    if (adjacent(ctx, m, decoy, kind)) { m.dir = dirTo(m, decoy)!; monsterHitsMonster(ctx, m, decoy); return; }
+    if (stepToward(ctx, m, decoy)) return;
+  }
   const sees = seesPlayer(ctx, m);
   if (sees) m.goal = { x: p.x, y: p.y };
+  if (!m.role && inShop(ctx, m.x, m.y)) {
+    m.goal = null;
+    if (!m.wander || inShop(ctx, m.wander.x, m.wander.y)) m.wander = randomGoal(ctx, m);
+  }
   // ボス：配下を呼ぶ
   if (def.ability.k === 'boss' && !st.sealed) {
     m.cd = (m.cd ?? 0) - 1;
-    if (m.cd <= 0 && chance(ctx.r, 0.35)) {
-      m.cd = 7;
+    if (m.cd <= 0 && chance(ctx.r, 0.3)) {
+      m.cd = 10;
       let n = 0;
-      for (let i = 0; i < 2; i++) if (spawnNear(ctx, randomMonsterId(ctx.r, dangerOf(run.mode, run.floorNo) - 3), m, 1, 3)) n++;
+      // 弱ってくると呼ぶ数が増える
+      const count = m.hp < m.maxHp * 0.5 ? 2 : 1;
+      for (let i = 0; i < count; i++) if (spawnNear(ctx, randomMonsterId(ctx.r, dangerOf(run.mode, run.floorNo) - 6, run.banned), m, 1, 3)) n++;
       if (n) {
         log(ctx, `${def.name}が配下を呼び寄せた！`, 'warn');
         ev(ctx, { k: 'se', name: 'roar' });
@@ -164,6 +196,7 @@ export function monsterAct(ctx: Ctx, m: Monster) {
         m.dir = line.dir;
         ev(ctx, { k: 'beam', fx: m.x, fy: m.y, tx: p.x, ty: p.y, color: '#ff4a1a' });
         ev(ctx, { k: 'se', name: 'fire' });
+        scorch(ctx, tr.path);
         log(ctx, `${def.name}は業火を吐いた！`, 'bad');
         hurtPlayer(ctx, range(ctx.r, 22, 32), `${def.name}の業火`);
         return;
@@ -249,7 +282,6 @@ export function monstersPhase(ctx: Ctx, phase: 1 | 2) {
     let spd = def.spd;
     if (m.st.fast) spd += 1;
     if (m.st.slow) spd -= 1;
-    if (m.role === 'keeper' && m.angry) spd = Math.max(spd, 1);
     spd = Math.max(-1, Math.min(1, spd));
     if (phase === 1) {
       if (spd === -1 && run.turn % 2 === 1) continue;
@@ -267,6 +299,7 @@ export function tickMonsterStatus(ctx: Ctx) {
     const st = m.st;
     if (st.slow && st.slow < 999) st.slow -= 1;
     if (st.fast && st.fast < 999) st.fast -= 1;
+    if (st.decoy) { st.decoy -= 1; if (!st.decoy) log(ctx, `${monDef(m.id).name}は身代わりから元に戻った。`); }
   }
 }
 

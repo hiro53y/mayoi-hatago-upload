@@ -91,8 +91,8 @@ const FAMILIES: Family[] = [
     fam: 'kitsune', sprite: 'enemy-kitsune', move: 'walk', tag: 'beast', spd: 0, mod: [0.85, 0.85, 0.9],
     tiers: [
       { name: '子狐', lv: 3, hue: 0, tone: 1, ability: { k: 'confuse', p: 0.2 }, desc: '尾を揺らして相手の目を回す。混乱したまま歩くと危ない。' },
-      { name: '妖狐', lv: 13, hue: 160, tone: 1, ability: { k: 'confuse', p: 0.35 }, desc: '幻を見せる狐。混乱中の道具の使用には気をつけたい。' },
-      { name: '九尾', lv: 24, hue: 40, tone: 1.1, ability: { k: 'confuse', p: 0.5 }, desc: '九つの尾が光る大妖。叩かれるたびに世界が回る。' },
+      { name: '妖狐', lv: 13, hue: 160, tone: 1, ability: { k: 'confuse', p: 0.25 }, desc: '幻を見せる狐。混乱中の道具の使用には気をつけたい。' },
+      { name: '九尾', lv: 24, hue: 40, tone: 1.1, ability: { k: 'confuse', p: 0.35 }, desc: '九つの尾が光る大妖。叩かれるたびに世界が回る。' },
     ],
   },
   {
@@ -115,8 +115,8 @@ const FAMILIES: Family[] = [
     fam: 'kappa', sprite: 'enemy-kappa', move: 'swim', tag: null, spd: 0, mod: [0.9, 0.9, 0.9],
     tiers: [
       { name: '河童', lv: 3, hue: 0, tone: 1, ability: { k: 'stone', dmg: 4, p: 0.4 }, desc: '遠くから石を投げてくる。水の中も平気で泳ぐ。' },
-      { name: '川太郎', lv: 11, hue: 260, tone: 1, ability: { k: 'stone', dmg: 10, p: 0.45 }, desc: '川の主の若衆。投げる石は大きく、よく当たる。' },
-      { name: '河伯', lv: 21, hue: 170, tone: 0.95, ability: { k: 'stone', dmg: 20, p: 0.5 }, desc: '水を治める古い神。岩のような礫を投げつける。' },
+      { name: '川太郎', lv: 11, hue: 260, tone: 1, ability: { k: 'stone', dmg: 7, p: 0.35 }, desc: '川の主の若衆。投げる石は大きく、よく当たる。' },
+      { name: '河伯', lv: 21, hue: 170, tone: 0.95, ability: { k: 'stone', dmg: 14, p: 0.4 }, desc: '水を治める古い神。岩のような礫を投げつける。' },
     ],
   },
   {
@@ -131,8 +131,8 @@ const FAMILIES: Family[] = [
     fam: 'kage', sprite: 'enemy-shadow', move: 'phase', tag: 'spirit', spd: 0, mod: [0.8, 1, 0.7],
     tiers: [
       { name: '影法師', lv: 8, hue: 0, tone: 1, ability: { k: 'none' }, desc: '壁の中を通り抜けて近づいてくる影。壁の中にいる間は叩けない。' },
-      { name: '黒影', lv: 18, hue: 200, tone: 0.8, ability: { k: 'none' }, desc: '濃い闇の影。壁越しに何度でも現れる。', spd: 1 },
-      { name: '闇影', lv: 28, hue: 300, tone: 0.75, ability: { k: 'none' }, desc: '姿が見えない影の主。足音だけを頼りに戦うことになる。', spd: 1, invisible: true },
+      { name: '黒影', lv: 18, hue: 200, tone: 0.8, ability: { k: 'none' }, desc: '濃い闇の影。壁越しに何度でも現れる。' },
+      { name: '闇影', lv: 28, hue: 300, tone: 0.75, ability: { k: 'none' }, desc: '姿が見えない影の主。足音だけを頼りに戦うことになる。', invisible: true },
     ],
   },
   {
@@ -140,7 +140,7 @@ const FAMILIES: Family[] = [
     tiers: [
       { name: '山猫', lv: 7, hue: 0, tone: 1, ability: { k: 'none' }, desc: '素早い山の猫。1ターンに2歩動く。' },
       { name: '猫又', lv: 14, hue: 230, tone: 1, ability: { k: 'none' }, desc: '尾が二つに裂けた化け猫。逃げても追いつかれる。' },
-      { name: '化け猫', lv: 25, hue: 300, tone: 1, ability: { k: 'double' }, desc: '素早いうえに2回ずつ引っかく。通路で迎え撃ちたい。' },
+      { name: '化け猫', lv: 25, hue: 300, tone: 1, ability: { k: 'double' }, desc: '足は普通だが、1ターンに2回ずつ引っかく。通路で迎え撃ちたい。', spd: 0 },
     ],
   },
   {
@@ -194,9 +194,9 @@ const FAMILIES: Family[] = [
   {
     fam: 'gaki', sprite: 'gaki', move: 'walk', tag: 'spirit', spd: 0, mod: [1, 0.85, 0.9],
     tiers: [
-      { name: '餓鬼', lv: 6, hue: 0, tone: 1, ability: { k: 'hunger', amount: 8 }, desc: '叩かれるとお腹が減る。食べ物は大事に。' },
-      { name: '大餓鬼', lv: 15, hue: 120, tone: 1, ability: { k: 'hunger', amount: 15 }, desc: '底なしの食欲。満腹度をごっそり減らす。' },
-      { name: '飢餓鬼', lv: 25, hue: 260, tone: 0.9, ability: { k: 'hunger', amount: 25 }, desc: '飢えそのものの鬼。長居は禁物。' },
+      { name: '餓鬼', lv: 6, hue: 0, tone: 1, ability: { k: 'hunger', amount: 5 }, desc: '叩かれるとお腹が減る。食べ物は大事に。' },
+      { name: '大餓鬼', lv: 15, hue: 120, tone: 1, ability: { k: 'hunger', amount: 9 }, desc: '底なしの食欲。満腹度をごっそり減らす。' },
+      { name: '飢餓鬼', lv: 25, hue: 260, tone: 0.9, ability: { k: 'hunger', amount: 14 }, desc: '飢えそのものの鬼。長居は禁物。' },
     ],
   },
   {
@@ -212,10 +212,10 @@ const FAMILIES: Family[] = [
 /** 敵の強さ：出現階 lv から決め、系統の倍率をかける */
 function statsFor(lv: number, mod: [number, number, number]) {
   return {
-    hp: Math.round((3 + lv * 3.1) * mod[0]),
-    atk: Math.round((1 + lv * 0.8) * mod[1]),
-    def: Math.round(lv * 0.55 * mod[2]),
-    exp: Math.round((2 + lv * lv * 0.26 + lv) * 1.4),
+    hp: Math.round((3 + lv * 2.8) * mod[0]),
+    atk: Math.round((1 + lv * 0.7) * mod[1]),
+    def: Math.round(lv * 0.5 * mod[2]),
+    exp: Math.round((2 + lv * lv * 0.26 + lv) * 1.6),
   };
 }
 
@@ -246,14 +246,24 @@ for (const family of FAMILIES) {
 
 MONSTERS.push(
   {
-    id: 'keeper', name: '店主', fam: 'keeper', tier: 1, lv: 99, hp: 900, atk: 45, def: 30, exp: 1500, spd: 1, move: 'walk', tag: 'human',
+    id: 'keeper', name: '店主', fam: 'keeper', tier: 1, lv: 99, hp: 900, atk: 45, def: 30, exp: 1500, spd: 0, move: 'walk', tag: 'human',
     ability: { k: 'none' }, sprite: 'keeper', hue: 0, tone: 1, special: true,
-    desc: '迷宮で商いをする旅の商人。品物を持ったまま出ようとすると呼び止められる。怒らせると手がつけられない。',
+    desc: '迷宮で商いをする旅の商人。品物を持ったまま出ようとすると呼び止められる。払わずに逃げると、階段を降りるまでどこまでも追ってくる。',
   },
   {
-    id: 'guard', name: '番人', fam: 'guard', tier: 1, lv: 99, hp: 260, atk: 34, def: 22, exp: 400, spd: 1, move: 'walk', tag: 'human',
-    ability: { k: 'none' }, sprite: 'guard', hue: 0, tone: 1, special: true,
-    desc: '店から品を持ち逃げした者を追う番人。泥棒になると階ごとに現れる。',
+    id: 'inn', name: '宿の主人', fam: 'npc', tier: 1, lv: 99, hp: 999, atk: 0, def: 99, exp: 0, spd: 0, move: 'walk', tag: 'human',
+    ability: { k: 'none' }, sprite: 'keeper', hue: 25, tone: 1.05, special: true,
+    desc: '宿場の宿を営む主人。文を払えば、ひと晩でHPも満腹度もすっかり元通り。',
+  },
+  {
+    id: 'bank', name: '倉庫番', fam: 'npc', tier: 1, lv: 99, hp: 999, atk: 0, def: 99, exp: 0, spd: 0, move: 'walk', tag: 'human',
+    ability: { k: 'none' }, sprite: 'keeper', hue: 180, tone: 0.95, special: true,
+    desc: '預けた道具とお金を村の倉庫へ届けてくれる。冒険の途中で倒れても、預けた物は失わない。',
+  },
+  {
+    id: 'seer', name: '辻占い', fam: 'npc', tier: 1, lv: 99, hp: 999, atk: 0, def: 99, exp: 0, spd: 0, move: 'walk', tag: 'human',
+    ability: { k: 'none' }, sprite: 'keeper', hue: 270, tone: 0.9, special: true,
+    desc: '文を払えば、道具の正体を占ってくれる。',
   },
   {
     id: 'boss', name: '黄泉の大鬼', fam: 'boss', tier: 1, lv: 30, hp: 520, atk: 34, def: 26, exp: 3000, spd: 0, move: 'walk', tag: null,

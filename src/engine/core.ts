@@ -143,7 +143,7 @@ export function playerAttack(run: Run): number {
   const p = run.player;
   const weapon = equipped(run, 'weapon');
   const wp = weapon ? (itemDef(weapon.id).power ?? 0) + (weapon.plus ?? 0) : 0;
-  const base = 2 + p.lv * 0.9;
+  const base = 3 + p.lv * 1.05;
   const strMul = 0.6 + 0.05 * Math.max(0, p.str);
   return Math.max(1, (base + Math.max(0, wp)) * strMul + (charmIs(run, 'c_gouriki') ? 4 : 0));
 }

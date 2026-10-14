@@ -113,6 +113,7 @@ export const ITEMS: ItemDef[] = [
   { id: 'g_zassou', name: '雑草', cat: 'grass', price: 10, weight: 6, minFloor: 1, desc: '何の効果もない。' },
   { id: 'g_ten', name: '天の草', cat: 'grass', price: 300, weight: 3, minFloor: 4, desc: 'レベルが1上がる。' },
   { id: 'g_dokukeshi', name: '毒消し草', cat: 'grass', price: 100, weight: 6, minFloor: 2, desc: '下がった力を元に戻す。' },
+  { id: 'g_sugata', name: '姿隠しの草', cat: 'grass', price: 200, weight: 4, minFloor: 3, desc: 'しばらく敵に気づかれにくくなる。' },
   { id: 'g_muteki', name: '無敵草', cat: 'grass', price: 300, weight: 3, minFloor: 6, desc: 'しばらく打撃を受けない。' },
   // ── 巻物 ──
   { id: 's_shikibetsu', name: '識別の巻物', cat: 'scroll', price: 100, weight: 16, minFloor: 1, desc: '道具を1つ選んで正体を見極める。' },
@@ -127,9 +128,11 @@ export const ITEMS: ItemDef[] = [
   { id: 's_wanakeshi', name: '罠消しの巻物', cat: 'scroll', price: 200, weight: 5, minFloor: 2, desc: 'この階の罠をすべて消す。' },
   { id: 's_douguyose', name: '道具寄せの巻物', cat: 'scroll', price: 300, weight: 4, minFloor: 3, desc: 'この階の道具を足元に集める。' },
   { id: 's_kaijuu', name: '解呪の巻物', cat: 'scroll', price: 300, weight: 5, minFloor: 2, desc: '持ち物の呪いをすべて解く。' },
-  { id: 's_kikan', name: '帰還の巻物', cat: 'scroll', price: 800, weight: 3, minFloor: 3, desc: '持ち物と一緒に村へ帰る。' },
+  { id: 's_kikan', name: '帰還の巻物', cat: 'scroll', price: 800, weight: 2, minFloor: 5, desc: '持ち物と一緒に村へ帰る。' },
   { id: 's_chizu', name: '地図の巻物', cat: 'scroll', price: 200, weight: 6, minFloor: 1, desc: 'この階の地形と階段が分かる。' },
   { id: 's_bakuhatsu', name: '雷鳴の巻物', cat: 'scroll', price: 300, weight: 5, minFloor: 3, desc: '周りの敵に雷を落とす。' },
+  { id: 's_nekiri', name: '根切りの巻物', cat: 'scroll', price: 1000, weight: 2, minFloor: 6, desc: 'いちばん近い敵の種類を、この冒険から消し去る。' },
+  { id: 's_bakuretsu', name: '爆裂の巻物', cat: 'scroll', price: 400, weight: 4, minFloor: 3, desc: '周りの敵と壁を吹き飛ばす。' },
   { id: 's_tokitome', name: '時止めの巻物', cat: 'scroll', price: 600, weight: 2, minFloor: 8, desc: 'しばらくの間、階の敵がすべて止まる。' },
   // ── 杖 ──
   { id: 't_fukitobashi', name: 'ふきとばしの杖', cat: 'staff', price: 500, weight: 8, minFloor: 1, charges: [3, 6], desc: '当たった敵を遠くへ吹き飛ばす。' },
@@ -144,6 +147,7 @@ export const ITEMS: ItemDef[] = [
   { id: 't_hikiyose', name: '引き寄せの杖', cat: 'staff', price: 500, weight: 5, minFloor: 2, charges: [3, 6], desc: '当たった敵を目の前に引き寄せる。' },
   { id: 't_itamiwake', name: '痛み分けの杖', cat: 'staff', price: 800, weight: 4, minFloor: 4, charges: [2, 5], desc: '当たった敵は、こちらが受けた打撃と同じだけ傷つく。' },
   { id: 't_kussaku', name: '掘削の杖', cat: 'staff', price: 600, weight: 5, minFloor: 2, charges: [3, 6], desc: '向いている方向の壁をまっすぐくり抜いて通路を作る。' },
+  { id: 't_migawari', name: '身代わりの杖', cat: 'staff', price: 700, weight: 4, minFloor: 3, charges: [2, 5], desc: '当たった敵が身代わりになり、ほかの敵に狙われる。' },
   { id: 't_suima', name: '睡魔の杖', cat: 'staff', price: 600, weight: 6, minFloor: 2, charges: [3, 6], desc: '当たった敵を眠らせる。' },
   // ── 壺 ──
   { id: 'p_hozon', name: '保存の壺', cat: 'pot', price: 500, weight: 8, minFloor: 1, cap: [3, 5], desc: '道具をしまえる。取り出しもできる。' },

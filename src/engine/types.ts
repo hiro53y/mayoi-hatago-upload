@@ -61,6 +61,10 @@ export interface Status {
   bond?: boolean;
   /** 攻撃力が下がった（毒草を当てられた） */
   weak?: boolean;
+  /** 姿隠し（敵に気づかれにくい） */
+  hidden?: number;
+  /** 身代わり（ほかの敵に狙われる） */
+  decoy?: number;
 }
 
 export interface Monster {
@@ -82,7 +86,11 @@ export interface Monster {
   stolenGold?: number;
   /** 盗んだあと逃げている */
   fleeing?: boolean;
-  role?: 'keeper' | 'guard' | 'boss';
+  role?: 'keeper' | 'boss' | 'npc';
+  /** 宿場の人（宿・倉庫番・辻占い） */
+  npc?: NpcKind;
+  /** 化け狸が化けている道具 */
+  disguise?: string;
   /** 店主が怒っている */
   angry?: boolean;
   /** 最後にプレイヤーを見た場所 */
@@ -125,7 +133,9 @@ export interface Room { id: number; x: number; y: number; w: number; h: number; 
 
 export interface Shop { room: number; keeper: number }
 
-export type FloorKind = 'normal' | 'big' | 'boss';
+export type FloorKind = 'normal' | 'big' | 'boss' | 'town';
+
+export type NpcKind = 'inn' | 'bank' | 'seer';
 
 export interface Floor {
   no: number;
@@ -164,7 +174,8 @@ export interface LogLine { t: string; c?: 'good' | 'bad' | 'info' | 'item' | 'wa
 /** 画面に問い合わせる（店の支払い・売却） */
 export type Prompt =
   | { kind: 'pay'; amount: number; dir: Dir }
-  | { kind: 'sell'; amount: number; itemUid: number };
+  | { kind: 'sell'; amount: number; itemUid: number }
+  | { kind: 'npc'; who: NpcKind; cost: number };
 
 export interface RunStats {
   kills: number;
@@ -176,6 +187,8 @@ export interface RunStats {
   allies: number;
   killedIds: Record<string, number>;
   seenIds: Record<string, true>;
+  /** いちばん大きな一撃 */
+  maxHit?: number;
 }
 
 export interface RunEnd {
@@ -221,6 +234,11 @@ export interface Run {
   tutorial?: number;
   /** 落とし穴に落ちた（手番の終わりに次の階へ） */
   pendingFall?: boolean;
+  /** 根切りの巻物で消した敵の種類 */
+  banned?: Record<string, true>;
+  /** 宿場の倉庫番に預けた物とお金（倒れても村に届く） */
+  deposit?: Item[];
+  depositGold?: number;
 }
 
 /** 描画用の出来事。player の uid は 0 */
@@ -255,4 +273,6 @@ export type Action =
   | { t: 'shoot' }
   | { t: 'swapFoot'; uid: number }
   | { t: 'item'; uid: number; verb: Verb; target?: number; name?: string; scroll?: string }
-  | { t: 'answer'; yes: boolean; steal?: boolean };
+  | { t: 'answer'; yes: boolean; steal?: boolean }
+  | { t: 'npc'; who: NpcKind; target?: number; gold?: boolean }
+  | { t: 'sort' };

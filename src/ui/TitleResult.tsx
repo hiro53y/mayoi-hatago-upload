@@ -23,7 +23,7 @@ export function TitleScreen(props: { hasRun: boolean; runInfo: string; onStart: 
             <button className="primary" onClick={click(props.onStart)}>はじめる<small>村へ</small></button>
           )}
         </div>
-        <p className="credit">v2.0 ・ 毎回形の変わる迷宮で、一手ずつ生き延びよう</p>
+        <p className="credit">v2.1 ・ 毎回形の変わる迷宮で、一手ずつ生き延びよう</p>
       </div>
     </div>
   );
@@ -39,6 +39,17 @@ export function ResultScreen({ s, onVillage }: { s: Summary; onVillage: () => vo
         <p className="where">{s.floor}階{s.kind === 'dead' ? `で ${s.cause} に倒された` : ''}</p>
         {s.score !== undefined && <p className="score">得点 <b>{s.score}</b>{s.dailyBest ? '（本日の本番として記録）' : '（練習）'}</p>}
         {s.unlockedDeep && <p className="unlock">新しい迷宮「{MODE_NAME.deep}」が開いた！</p>}
+        <div className="record-grid highlights">
+          <div><small>レベル</small><b>{s.highlights.lv}</b><small>{s.highlights.turns}ターン</small></div>
+          <div><small>倒した敵</small><b>{s.highlights.kills}</b><small>仲間 {s.highlights.allies}</small></div>
+          <div><small>最大の一撃</small><b>{s.highlights.maxHit}</b><small>{s.highlights.weapon ?? '素手'}</small></div>
+        </div>
+        {(s.deposited.length > 0 || s.depositGold > 0) && (
+          <div className="kept">
+            <h3>宿場で預けた物（村の倉庫へ）{s.depositGold ? `・${s.depositGold}文` : ''}</h3>
+            <div className="kept-list">{s.deposited.map((i) => <span key={i.uid} className="kept-item"><ItemIcon id={i.id} size={22} />{itemLabel(null, i)}</span>)}</div>
+          </div>
+        )}
         {s.newTitles.length > 0 && (
           <div className="new-titles">
             <h3>新しい称号</h3>

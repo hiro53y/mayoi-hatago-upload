@@ -78,7 +78,7 @@ export function levelUp(ctx: Ctx, byHerb: boolean) {
   if (p.lv >= 99) return;
   p.lv += 1;
   if (byHerb) p.exp = Math.max(p.exp, expFor(p.lv));
-  const gain = range(ctx.r, 3, 6);
+  const gain = range(ctx.r, 4, 7);
   p.maxHp += gain;
   p.hp = Math.min(p.maxHp, p.hp + gain);
   log(ctx, `レベル${p.lv}に上がった！`, 'good');
@@ -112,7 +112,7 @@ export function weakenStr(ctx: Ctx, n: number) {
 // ── 敵 ──
 
 export function hostile(m: Monster): boolean {
-  if (m.dead || m.ally) return false;
+  if (m.dead || m.ally || m.role === 'npc') return false;
   if (m.role === 'keeper') return !!m.angry;
   return true;
 }
@@ -133,9 +133,11 @@ export function createMonster(ctx: Ctx, id: string, x: number, y: number, awake:
 }
 
 export function hurtMonster(ctx: Ctx, m: Monster, n: number, by: 'player' | Monster | 'other', opts: { crit?: boolean; noExp?: boolean } = {}) {
-  if (m.dead) return;
+  if (m.dead || m.role === 'npc') return;
+  if (m.disguise) revealDisguise(ctx, m);
   const dmg = Math.max(1, Math.round(n));
   m.hp -= dmg;
+  if (by === 'player') ctx.run.stats.maxHit = Math.max(ctx.run.stats.maxHit ?? 0, dmg);
   m.awake = true;
   if (m.st.paralyze) m.st.paralyze = 0;
   if (m.st.sleep) m.st.sleep = 0;
@@ -147,6 +149,17 @@ export function hurtMonster(ctx: Ctx, m: Monster, n: number, by: 'player' | Mons
     return;
   }
   if (m.hp <= 0) killMonster(ctx, m, by, opts.noExp);
+}
+
+/** 化け狸が正体を現す */
+export function revealDisguise(ctx: Ctx, m: Monster) {
+  if (!m.disguise) return;
+  delete m.disguise;
+  m.awake = true;
+  m.st.sleep = 0;
+  ctx.run.stats.seenIds[m.id] = true;
+  log(ctx, `なんと、${monName(m)}が化けていた！`, 'warn');
+  ev(ctx, { k: 'popup', x: m.x, y: m.y, text: 'ドロン！', color: '#ffd84a' });
 }
 
 export function angerKeeper(ctx: Ctx, keeper: Monster) {
@@ -170,10 +183,9 @@ export function makeThief(ctx: Ctx) {
   if (!run.thief) {
     run.thief = true;
     run.stats.stolen += 1;
-    log(ctx, '泥棒になった！ 番人が追ってくる。', 'warn');
   }
-  for (const m of run.monsters) if (m.role === 'keeper') { m.angry = true; m.awake = true; }
-  for (let i = 0; i < 3; i++) spawnNear(ctx, 'guard', run.player, 3, 7);
+  log(ctx, '泥棒だ！ 店主が追ってくる。階段を降りれば逃げ切れる。', 'warn');
+  for (const m of run.monsters) if (m.role === 'keeper') { m.angry = true; m.awake = true; m.st = {}; }
 }
 
 function explode(ctx: Ctx, m: Monster, dmg: number) {
@@ -332,7 +344,7 @@ export function spawnNear(ctx: Ctx, id: string, pos: Pos, minR: number, maxR: nu
     const r = range(ctx.r, minR, maxR);
     const x = pos.x + range(ctx.r, -r, r), y = pos.y + range(ctx.r, -r, r);
     if (!inside(f, x, y) || !canStand(f, x, y, kind) || f.tiles[at(f, x, y)] !== T_FLOOR || !vacant(ctx.run, x, y)) continue;
-    return createMonster(ctx, id, x, y, true, id === 'guard' ? 'guard' : undefined);
+    return createMonster(ctx, id, x, y, true);
   }
   return null;
 }
@@ -347,7 +359,7 @@ export function teleportPlayer(ctx: Ctx) {
 }
 
 export function teleportMonster(ctx: Ctx, m: Monster) {
-  const spot = randomSpot(ctx, { kind: moveKind(m) === 'phase' ? 'walk' : moveKind(m), awayFrom: ctx.run.player, minDist: 6 });
+  const spot = randomSpot(ctx, { kind: moveKind(m) === 'phase' ? 'walk' : moveKind(m), awayFrom: ctx.run.player, minDist: 6, noShop: true });
   if (!spot) return;
   m.x = spot.x;
   m.y = spot.y;
@@ -359,13 +371,13 @@ export function teleportMonster(ctx: Ctx, m: Monster) {
 /** 周期的な敵の出現 */
 export function maybeSpawn(ctx: Ctx) {
   const run = ctx.run;
-  if (run.floor.kind === 'boss' || run.mode === 'practice') return;
+  if (run.floor.kind === 'boss' || run.floor.kind === 'town' || run.mode === 'practice') return;
   run.spawnIn -= 1;
   if (run.spawnIn > 0) return;
   run.spawnIn = range(ctx.r, 35, 65);
   const count = run.monsters.filter((m) => !m.dead && !m.role && !m.ally).length;
   if (count >= 14) return;
-  const id = randomMonsterId(ctx.r, dangerOf(run.mode, run.floorNo));
+  const id = randomMonsterId(ctx.r, dangerOf(run.mode, run.floorNo), run.banned);
   const spot = randomSpot(ctx, { kind: monDef(id).move === 'phase' ? 'walk' : monDef(id).move, hidden: true, awayFrom: run.player, minDist: 6, noShop: true });
   if (spot) createMonster(ctx, id, spot.x, spot.y, chance(ctx.r, 0.6));
 }

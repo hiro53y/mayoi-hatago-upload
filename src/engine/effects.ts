@@ -8,10 +8,10 @@ import {
   buyPrice, charmIs, equipped, ev, isEquipped, itemName, log, monName, newUid, sealsOf, sealSlots, sellPrice, typeKnown, type Ctx,
 } from './core';
 import {
-  dropNear, healPlayer, hurtMonster, hurtPlayer, identify, levelUp, makeKnownType, MAX_ALLIES, MAX_INV,
+  dropNear, healPlayer, hurtMonster, revealDisguise, hurtPlayer, identify, levelUp, makeKnownType, MAX_ALLIES, MAX_INV,
   monsterLevelUp, spawnNear, teleportMonster, teleportPlayer, weakenStr,
 } from './actors';
-import { confusePlayer, knockback, rustEquipment, sleepPlayer, trace } from './combat';
+import { confusePlayer, knockback, rustEquipment, scorch, sleepPlayer, trace } from './combat';
 import { makeItem, randomItemDef, randomMonsterId } from './mapgen';
 import { DX, DY, T_FLOOR, T_HARD, T_WALL, type Dir, type Item, type Monster } from './types';
 
@@ -165,6 +165,7 @@ export function eatGrass(ctx: Ctx, id: string) {
       if (p.str < p.maxStr) { p.str = p.maxStr; log(ctx, `力が元に戻った。（${p.str}）`, 'good'); } else log(ctx, '何も起こらなかった。');
       break;
     case 'g_muteki': p.st.invincible = 20; log(ctx, '無敵になった！', 'good'); break;
+    case 'g_sugata': p.st.hidden = 30; log(ctx, '姿が薄れた。敵に気づかれにくくなった。', 'good'); break;
     default:
   }
 }
@@ -174,6 +175,7 @@ function breatheFire(ctx: Ctx) {
   const tr = trace(ctx, p, p.dir, 10);
   ev(ctx, { k: 'beam', fx: p.x, fy: p.y, tx: tr.end.x, ty: tr.end.y, color: '#ff7a2a' });
   ev(ctx, { k: 'se', name: 'fire' });
+  scorch(ctx, tr.path);
   const m = tr.hits[0];
   if (m) {
     log(ctx, `${monName(m)}を炎が包んだ！`);
@@ -289,6 +291,35 @@ export function readScroll(ctx: Ctx, id: string, target?: number, scroll?: strin
       for (const m of near) hurtMonster(ctx, m, 35, 'player');
       break;
     }
+    case 's_nekiri': {
+      const target = inSight().filter((m) => !m.role).sort((a, b) => cheb(a, p) - cheb(b, p))[0];
+      if (!target) { log(ctx, '根切りの巻物を読んだが、見える所に敵がいなかった。'); break; }
+      const id = target.id;
+      (run.banned ??= {})[id] = true;
+      let n = 0;
+      for (const m of run.monsters) {
+        if (m.id === id && !m.ally && !m.dead) { m.dead = true; n++; ev(ctx, { k: 'die', uid: m.uid, x: m.x, y: m.y }); }
+      }
+      ev(ctx, { k: 'flash', color: '#c8b0ff' });
+      log(ctx, `${monDef(id).name}は、この冒険から根こそぎ姿を消した！（${n}体）`, 'good');
+      break;
+    }
+    case 's_bakuretsu': {
+      ev(ctx, { k: 'boom', x: p.x, y: p.y, r: 1 });
+      ev(ctx, { k: 'se', name: 'boom' });
+      let walls = 0;
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          const x = p.x + dx, y = p.y + dy;
+          if (x <= 0 || y <= 0 || x >= f.w - 1 || y >= f.h - 1) continue;
+          if (f.tiles[at(f, x, y)] === T_WALL) { f.tiles[at(f, x, y)] = T_FLOOR; walls++; }
+        }
+      }
+      const near = run.monsters.filter((m) => !m.dead && !m.ally && m.role !== 'npc' && cheb(m, p) <= 1);
+      for (const m of near) hurtMonster(ctx, m, 40, 'player');
+      log(ctx, `爆裂！${walls ? `壁が${walls}マス吹き飛んだ。` : ''}${near.length ? '' : ''}`, 'warn');
+      break;
+    }
     case 's_tokitome':
       run.timeStop = 15;
       log(ctx, '時が止まった！', 'good');
@@ -322,6 +353,8 @@ export function staffEffect(ctx: Ctx, id: string, m: Monster, dir: Dir) {
   const run = ctx.run;
   const p = run.player;
   const name = monName(m);
+  if (m.role === 'npc') { log(ctx, `${name}には効かなかった。`); return; }
+  if (m.disguise) revealDisguise(ctx, m);
   if (m.role === 'keeper' && !m.angry && id !== 't_chigiri') {
     // 店主に杖を当てると怒る
     hurtMonster(ctx, m, 1, 'player');
@@ -352,7 +385,7 @@ export function staffEffect(ctx: Ctx, id: string, m: Monster, dir: Dir) {
       break;
     case 't_henge': {
       if (m.role) { log(ctx, `${name}には効かなかった。`); break; }
-      const nid = randomMonsterId(ctx.r, dangerOf(run.mode, run.floorNo));
+      const nid = randomMonsterId(ctx.r, dangerOf(run.mode, run.floorNo), run.banned);
       m.id = nid;
       const def = monDef(nid);
       m.maxHp = Math.round(def.hp * (m.scale ?? 1));
@@ -388,6 +421,13 @@ export function staffEffect(ctx: Ctx, id: string, m: Monster, dir: Dir) {
     }
     case 't_itamiwake': m.st.bond = true; log(ctx, `${name}と痛みを分け合うことになった。`); break;
     case 't_suima': m.st.sleep = 30; log(ctx, `${name}は眠ってしまった。`); break;
+    case 't_migawari':
+      if (m.role) { log(ctx, `${name}には効かなかった。`); break; }
+      m.st.decoy = 40;
+      m.awake = true;
+      log(ctx, `${name}は身代わりになった！ ほかの敵が襲いかかる。`, 'good');
+      ev(ctx, { k: 'popup', x: m.x, y: m.y, text: '身代わり', color: '#ffb0f0' });
+      break;
     default:
   }
   m.awake = m.awake || id === 't_fukitobashi';
@@ -713,6 +753,11 @@ export function pickUp(ctx: Ctx, quietIfNone = false): boolean {
     // 聖域の巻物は歩いただけでは拾わない
     return false;
   }
+  if (fi.item.shop && quietIfNone) {
+    // 店の品は「拾う」を押した時だけ
+    log(ctx, `${itemName(run, fi.item)}がある。（${buyPrice(fi.item)}文・「拾う」で手に取る）`, 'info');
+    return false;
+  }
   const name = itemName(run, fi.item);
   if (!addToInv(ctx, fi.item)) {
     log(ctx, `${name}の上に乗った。（持ち物がいっぱい）`);
@@ -778,7 +823,7 @@ export function triggerTrap(ctx: Ctx, trapIndex: number) {
       const danger = dangerOf(run.mode, run.floorNo);
       let n = 0;
       for (let i = 0; i < range(ctx.r, 3, 5); i++) {
-        const id = randomMonsterId(ctx.r, danger);
+        const id = randomMonsterId(ctx.r, danger, run.banned);
         if (spawnNear(ctx, id, p, 1, 2)) n++;
       }
       log(ctx, n ? '敵が現れた！' : '……何も起こらなかった。', n ? 'bad' : undefined);

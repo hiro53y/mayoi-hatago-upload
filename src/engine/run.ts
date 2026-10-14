@@ -1,14 +1,21 @@
 // 冒険の始まりと階の移動
 import { FAKE_NAMES, ITEMS, UNID_CATS, itemDef } from '../content/items';
 import { BANDS, MODE_FLOORS, bandOf, dangerOf } from '../content/world';
-import { hashSeed, range, shuffle } from './rng';
+import { hashSeed, pick, range, shuffle } from './rng';
 import { generateFloor } from './mapgen';
 import { canStand, updateSight, vacant } from './geo';
 import { ev, log, newUid, type Ctx } from './core';
-import { createMonster, makeThief, onEnterRoom, spawnNear } from './actors';
+import { createMonster, makeThief, onEnterRoom } from './actors';
 import { DX, DY, type Item, type Monster, type Run, type RunMode } from './types';
 
 export const RUN_VERSION = 2;
+
+/** 中継の宿場になる階（本編10・20階、深層30・60・90階） */
+export function isTownFloor(mode: RunMode, no: number): boolean {
+  if (mode === 'main') return no === 10 || no === 20;
+  if (mode === 'deep') return no % 30 === 0 && no < 99;
+  return false;
+}
 
 export interface NewRunOptions {
   mode: RunMode;
@@ -101,9 +108,10 @@ export function enterFloor(ctx: Ctx, no: number, allies: Monster[]) {
   const band = bandOf(run.mode, no);
   const danger = dangerOf(run.mode, no);
   const boss = (run.mode === 'main' && no === MODE_FLOORS.main) || (run.mode === 'deep' && no === MODE_FLOORS.deep);
+  const town = isTownFloor(run.mode, no);
   const genRng = { s: hashSeed(run.seed, run.mode, 'floor', no) };
   const gen = generateFloor(genRng, {
-    mode: run.mode, no, danger, band, liquid: BANDS[band].liquid, boss, newUid: () => newUid(run),
+    mode: run.mode, no, danger, band, liquid: BANDS[band].liquid, boss, town, banned: run.banned ?? {}, newUid: () => newUid(run),
   });
   run.floor = gen.floor;
   run.monsters = [];
@@ -113,7 +121,14 @@ export function enterFloor(ctx: Ctx, no: number, allies: Monster[]) {
   for (const s of gen.spawns) {
     const m = createMonster(ctx, s.id, s.x, s.y, !s.asleep, s.role);
     if (s.asleep) m.awake = false;
+    if (s.npc) m.npc = s.npc;
     if (s.role === 'keeper' && run.floor.shop) run.floor.shop.keeper = m.uid;
+    // 化け狸は、寝ている間は道具に化けている
+    if (s.asleep && (s.id === 'tanuki2' || s.id === 'tanuki3')) {
+      m.disguise = pick(genRng, ['g_yakusou', 'g_daiyakusou', 's_shikibetsu', 'f_onigiri', 'g_chikara']);
+      run.stats.seenIds[s.id] = undefined as unknown as true;
+      delete run.stats.seenIds[s.id];
+    }
   }
   // 仲間を隣に置く
   for (const ally of allies) {
@@ -130,14 +145,12 @@ export function enterFloor(ctx: Ctx, no: number, allies: Monster[]) {
     }
   }
   run.spawnIn = range(ctx.r, 30, 60);
-  if (run.thief) {
-    for (let i = 0; i < 2; i++) spawnNear(ctx, 'guard', run.player, 6, 12);
-  }
   updateSight(run);
   onEnterRoom(ctx);
   ev(ctx, { k: 'floor' });
   const name = BANDS[band].name;
   if (gen.floor.kind === 'boss') log(ctx, `${no}階 ── 最上階。強大な気配がする……`, 'warn');
+  else if (gen.floor.kind === 'town') log(ctx, `${no}階 ── 宿場に着いた。ここに敵はいない。宿・倉庫番・辻占いに話しかけてみよう。`, 'good');
   else log(ctx, `${no}階（${name}）に着いた。`, 'info');
   if (gen.floor.dark) log(ctx, 'この階は暗闇に包まれている。', 'warn');
   if (gen.floor.fog) log(ctx, 'この階は霧が立ちこめている。', 'warn');

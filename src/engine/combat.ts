@@ -1,9 +1,10 @@
 // 近接の打ち合い・特技・飛ぶ物の軌道・吹き飛ばし
 import { monDef } from '../content/monsters';
+import { itemDef } from '../content/items';
 import { chance, int, next, pick, range } from './rng';
-import { at, canStand, cornerOk, inside, isWall, monsterAt, moveKind, tileAt } from './geo';
+import { at, canStand, cornerOk, inside, isWall, monsterAt, moveKind } from './geo';
 import { charmIs, damageRoll, equipped, ev, hasSeal, itemName, log, monAtk, monDefense, monName, playerAttack, playerDefense, sealsOf, type Ctx } from './core';
-import { angerKeeper, hurtMonster, hurtPlayer, levelDown, teleportMonster, weakenStr } from './actors';
+import { angerKeeper, revealDisguise, hurtMonster, hurtPlayer, levelDown, teleportMonster, weakenStr } from './actors';
 import { DX, DY, T_FLOOR, T_HARD, type Dir, type Monster, type Pos } from './types';
 
 const PLAYER_HIT = 0.95;
@@ -39,7 +40,6 @@ export function playerMelee(ctx: Ctx) {
     // 斜めは角を挟むと届かない。貫きの2マス目は1マス目が壁でない時だけ
     if (!cornerOk(f, p.x, p.y, t.dir)) continue;
     if (Math.max(Math.abs(t.x - p.x), Math.abs(t.y - p.y)) === 2 && isWall(f, p.x + DX[dir], p.y + DY[dir])) continue;
-    if (tileAt(f, m.x, m.y) !== T_FLOOR && moveKind(m) === 'phase' && isWall(f, m.x, m.y)) continue; // 壁の中の影は叩けない
     any = true;
     attackMonster(ctx, m);
     if (run.end) return;
@@ -62,6 +62,11 @@ export function playerMelee(ctx: Ctx) {
 
 export function attackMonster(ctx: Ctx, m: Monster) {
   const run = ctx.run;
+  if (m.role === 'npc') {
+    log(ctx, `${monName(m)}「乱暴はよしてくだされ」`);
+    return;
+  }
+  if (m.disguise) revealDisguise(ctx, m);
   if (m.role === 'keeper' && !m.angry) angerKeeper(ctx, m);
   if (!chance(ctx.r, PLAYER_HIT)) {
     log(ctx, `${monName(m)}に攻撃が外れた。`);
@@ -136,7 +141,7 @@ function onHitAbility(ctx: Ctx, m: Monster) {
       return;
     }
     case 'confuse':
-      if (chance(ctx.r, a.p)) confusePlayer(ctx, 3 + monDef(m.id).tier * 2);
+      if (chance(ctx.r, a.p)) confusePlayer(ctx, 3 + monDef(m.id).tier);
       return;
     case 'rust':
       if (chance(ctx.r, a.p)) rustEquipment(ctx);
@@ -207,6 +212,23 @@ export function monsterHitsMonster(ctx: Ctx, attacker: Monster, target: Monster)
   const dmg = damageRoll(monAtk(attacker), monDefense(target), 20, next(ctx.r));
   if (attacker.ally || target.ally) log(ctx, `${monName(attacker)}は${monName(target)}に${dmg}の打撃を与えた。`);
   hurtMonster(ctx, target, dmg, attacker);
+}
+
+/** 火の通り道：床のおにぎりは焼け、巻物は燃える */
+export function scorch(ctx: Ctx, path: Pos[]) {
+  const f = ctx.run.floor;
+  for (const p of path) {
+    const fi = f.items.find((x) => x.x === p.x && x.y === p.y);
+    if (!fi || fi.item.shop) continue;
+    const cat = itemDef(fi.item.id).cat;
+    if (fi.item.id === 'f_onigiri' || fi.item.id === 'f_oonigiri' || fi.item.id === 'f_kusatta') {
+      fi.item.id = 'f_yaki';
+      log(ctx, 'おにぎりがこんがり焼けた。', 'item');
+    } else if (cat === 'scroll') {
+      f.items.splice(f.items.indexOf(fi), 1);
+      log(ctx, '巻物が燃えてしまった！', 'warn');
+    }
+  }
 }
 
 // ── 飛ぶ物 ──
@@ -289,6 +311,7 @@ export function rangedAbility(ctx: Ctx, m: Monster, line: { dir: Dir; dist: numb
     if (a.k === 'fire') {
       ev(ctx, { k: 'beam', fx: m.x, fy: m.y, tx: p.x, ty: p.y, color: '#ff7a2a' });
       ev(ctx, { k: 'se', name: 'fire' });
+      scorch(ctx, tr.path);
       const dmg = Math.round(a.dmg * (m.scale ?? 1) * (0.85 + next(ctx.r) * 0.3) * (hasSeal(run, '火') ? 0.5 : 1));
       log(ctx, `${monName(m)}は火を吐いた！ ${dmg}の打撃。`, 'bad');
       hurtPlayer(ctx, dmg, `${monName(m)}の火`);

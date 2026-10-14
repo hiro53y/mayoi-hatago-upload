@@ -52,7 +52,9 @@ export function validRun(value: unknown): value is Run {
 export function deserializeRun(text: string | null): Run | null {
   if (!text) return null;
   try {
-    const run = JSON.parse(text) as unknown;
+    const run = JSON.parse(text) as Run;
+    // 2.0 の番人など、今は無い敵は取り除いて読む
+    if (run && Array.isArray(run.monsters)) run.monsters = run.monsters.filter((m) => m && !!MON_BY_ID[m.id]);
     return validRun(run) ? run : null;
   } catch {
     return null;

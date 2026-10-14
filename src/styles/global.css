@@ -275,3 +275,10 @@ h4 { margin: 14px 0 6px; font-size: 0.9rem; }
   .btn-a, .btn-b { width: 62px; height: 62px; }
   .msg-box { min-height: 52px; font-size: 0.8rem; }
 }
+
+/* ── 2.1 ── */
+.float-btn.shop { background: linear-gradient(180deg, #3a2f18, #241c10); border-color: var(--gold); color: #ffe7a8; font-weight: 700; }
+.row-buttons.top { margin: 0 0 8px; }
+.hp-bar.small { height: 7px; margin: 6px 0 2px; max-width: 220px; }
+.record-grid.highlights { margin: 14px 0 4px; }
+.book-detail .hp-bar { flex: none; }

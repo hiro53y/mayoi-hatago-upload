@@ -157,17 +157,6 @@ export const MONSTER_ART: Record<string, string> = {
      <ellipse cx="48" cy="60" rx="5" ry="3" fill="#e88a7a" stroke="none"/><ellipse cx="80" cy="60" rx="5" ry="3" fill="#e88a7a" stroke="none"/>
      <rect x="88" y="96" width="24" height="18" rx="2" fill="#7a4a2a"/><path d="M92 100 v10 M98 100 v10 M104 100 v10 M110 100 v10" stroke="#e8c070" stroke-width="2"/>`,
   ),
-  guard: wrap(
-    linear('gdk', '#8a2a2a', '#4a1414') + radial('gdf', '#e8b088', '#a8684a'),
-    `<path d="M104 8 V122" stroke="#5a3a1e" stroke-width="5"/><path d="M98 8 L104 -6 L110 8 Z" fill="#d0d8e0"/>
-     <path d="M26 124 C24 94 38 76 64 74 C90 76 104 94 102 124 Z" fill="url(#gdk)"/>
-     <path d="M36 90 h56 M36 104 h56" stroke="#c9a040" stroke-width="3"/>
-     <circle cx="64" cy="50" r="24" fill="url(#gdf)"/>
-     <path d="M36 50 C34 20 94 20 92 50 L86 46 C84 32 44 32 42 46 Z" fill="#3a3a44"/>
-     <path d="M64 22 v-10" stroke="#c9a040" stroke-width="4"/><path d="M52 14 L64 4 L76 14" fill="none" stroke="#c9a040" stroke-width="3"/>
-     <path d="M50 52 l10 3 M78 52 l-10 3" stroke-width="3.5"/>
-     <path d="M54 66 h20" stroke-width="3.5"/>`,
-  ),
   oni: wrap(
     radial('onb', '#ff6a4a', '#9a1e14') + linear('onp', '#f4c84a', '#b0781a'),
     `<path d="M100 18 L118 112" stroke="${OL}" stroke-width="16"/><path d="M100 18 L118 112" stroke="#6a4a2a" stroke-width="11"/>

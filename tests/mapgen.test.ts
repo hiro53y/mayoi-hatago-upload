@@ -47,6 +47,11 @@ describe('地図の生成', () => {
           if (keeper && keeper.x === ix && keeper.y === iy) problems.push(`${tag} 店主が入口をふさいでいる`);
         }
         if (!f.items.some((fi) => fi.item.shop)) problems.push(`${tag} 店に品物が無い`);
+        for (const id of ['w_tsuruhashi', 't_kussaku']) {
+          const tool = f.items.filter((fi) => fi.item.id === id && !fi.item.shop);
+          if (tool.length < 1) problems.push(`${tag} 店の階に${id}が無い`);
+          if (tool.some((fi) => f.roomOf[at(f, fi.x, fi.y)] === room.id)) problems.push(`${tag} ${id}が店の中にある`);
+        }
       }
       if (problems.length > 10) break;
     }
