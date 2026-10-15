@@ -5,7 +5,7 @@ import { dangerOf, TRAP_BY_ID } from '../content/world';
 import { chance, int, next, pick, range } from './rng';
 import { at, cheb, roomAt, vacant, visibleFrom } from './geo';
 import {
-  buyPrice, charmIs, equipped, ev, isEquipped, itemName, log, monName, newUid, sealsOf, sealSlots, sellPrice, typeKnown, type Ctx,
+  buyPrice, charmIs, equipped, ev, hasUnpaid, isEquipped, itemName, log, monName, newUid, sealsOf, sealSlots, sellPrice, typeKnown, type Ctx,
 } from './core';
 import {
   dropNear, healPlayer, hurtMonster, revealDisguise, hurtPlayer, identify, levelUp, makeKnownType, MAX_ALLIES, MAX_INV,
@@ -38,11 +38,21 @@ export function addToInv(ctx: Ctx, item: Item): boolean {
   }
   const def = itemDef(item.id);
   if (def.cat === 'arrow') {
-    const same = p.inv.find((i) => i.id === item.id && !i.shop === !item.shop && (i.count ?? 0) < 99);
-    if (same) {
-      same.count = Math.min(99, (same.count ?? 0) + (item.count ?? 0));
-      return true;
+    let remaining = item.count ?? 0;
+    for (const same of p.inv) {
+      if (same.id !== item.id || !!same.shop !== !!item.shop || (same.count ?? 0) >= 99) continue;
+      const n = Math.min(99 - (same.count ?? 0), remaining);
+      same.count = (same.count ?? 0) + n;
+      remaining -= n;
+      if (!remaining) break;
     }
+    while (remaining > 0 && p.inv.length < MAX_INV) {
+      const n = Math.min(99, remaining);
+      p.inv.push({ ...item, uid: newUid(ctx.run), count: n });
+      remaining -= n;
+    }
+    item.count = remaining;
+    return remaining === 0;
   }
   if (p.inv.length >= MAX_INV) return false;
   if (charmIs(ctx.run, 'c_shikibetsu')) { ctx.run.known[item.id] = true; item.known = true; }
@@ -625,6 +635,10 @@ export function unequipItem(ctx: Ctx, item: Item): Took {
 export function putInPot(ctx: Ctx, pot: Item, item: Item): Took {
   const run = ctx.run;
   if (pot === item || itemDef(pot.id).cat !== 'pot') return 'free';
+  if (hasUnpaid(item) || hasUnpaid(pot)) {
+    log(ctx, '店主「お代を払ってから壺を使ってくだされ」');
+    return 'free';
+  }
   if (isEquipped(run, item) && item.cursed) { log(ctx, '呪われていて手放せない！', 'bad'); return 'free'; }
   const contents = (pot.contents ??= []);
   if (contents.length >= (pot.cap ?? 0)) { log(ctx, `${itemName(run, pot)}はもういっぱいだ。`); pot.known = true; return 'free'; }
@@ -759,13 +773,19 @@ export function pickUp(ctx: Ctx, quietIfNone = false): boolean {
     return false;
   }
   const name = itemName(run, fi.item);
+  const beforeCount = fi.item.count;
   if (!addToInv(ctx, fi.item)) {
+    if (beforeCount !== undefined && beforeCount > (fi.item.count ?? 0)) {
+      log(ctx, `${beforeCount - (fi.item.count ?? 0)}本拾った。残り${fi.item.count}本は足元にある。`, 'item');
+      ev(ctx, { k: 'se', name: 'pickup' });
+      return true;
+    }
     log(ctx, `${name}の上に乗った。（持ち物がいっぱい）`);
     return false;
   }
   run.floor.items.splice(run.floor.items.indexOf(fi), 1);
   ev(ctx, { k: 'se', name: fi.item.id === 'gold' ? 'coin' : 'pickup' });
-  if (fi.item.shop) log(ctx, `${name}を拾った。（店主「${buyPrice(fi.item)}文になります」）`, 'item');
+  if (fi.item.shop) log(ctx, `${name}を拾った。（店主「${buyPrice({ ...fi.item, count: beforeCount })}文になります」）`, 'item');
   else log(ctx, `${name}を拾った。`, 'item');
   return true;
 }

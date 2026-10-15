@@ -85,6 +85,7 @@ export function GameScreen({ run, settings, onSettings, onEnd, onSuspend, onGive
     const canvas = canvasRef.current!;
     const r = new Renderer(canvas);
     rendererRef.current = r;
+    r.opts = { fast: settings.fast, tiers: settings.tiers };
     r.sync(run);
     const box = boxRef.current!;
     const fit = () => r.resize(box.clientWidth, box.clientHeight);
@@ -95,8 +96,8 @@ export function GameScreen({ run, settings, onSettings, onEnd, onSuspend, onGive
   }, [run]);
 
   useEffect(() => {
-    if (rendererRef.current) rendererRef.current.opts.fast = settings.fast;
-  }, [settings.fast]);
+    if (rendererRef.current) { rendererRef.current.opts.fast = settings.fast; rendererRef.current.opts.tiers = settings.tiers; }
+  }, [settings.fast, settings.tiers]);
 
 
   const act = useCallback((a: Action, quick = false) => {
@@ -175,6 +176,7 @@ export function GameScreen({ run, settings, onSettings, onEnd, onSuspend, onGive
     const onKey = (e: KeyboardEvent) => {
       if (panel !== 'none' || dirPick || run.prompt) return;
       const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+      if (k === 'c' && e.shiftKey) { e.preventDefault(); setPanel('status'); return; }
       const dir = KEY_DIRS[e.code] ?? KEY_DIRS[k];
       if (dir !== undefined) {
         e.preventDefault();
@@ -185,7 +187,6 @@ export function GameScreen({ run, settings, onSettings, onEnd, onSuspend, onGive
       if (k === ' ' || k === 'Enter') { e.preventDefault(); act({ t: 'attack' }); }
       else if (k === 'x' || e.code === 'Numpad5') act({ t: 'wait' });
       else if (k === 'r') act({ t: 'rest' }, true);
-      else if (k === 'c' && e.shiftKey) setPanel('status');
       else if (k === 'i') setPanel('inv');
       else if (k === 'g' || k === '>') act({ t: 'stairs' });
       else if (k === 'v') onItemAction({ t: 'shoot' });

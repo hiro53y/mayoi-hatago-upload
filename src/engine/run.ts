@@ -81,12 +81,13 @@ export function createRun(o: NewRunOptions): Run {
   }
   for (const carried of o.carry ?? []) {
     const copy = JSON.parse(JSON.stringify(carried)) as Item;
-    copy.uid = run.nextUid++;
-    for (const inner of copy.contents ?? []) inner.uid = run.nextUid++;
+    const assign = (i: Item) => { i.uid = run.nextUid++; for (const c of i.contents ?? []) assign(c); };
+    assign(copy);
     p.inv.push(copy);
     // 倉庫から持ち込んだ物は正体が分かっている
     run.known[copy.id] = true;
-    for (const inner of copy.contents ?? []) run.known[inner.id] = true;
+    const know = (i: Item) => { run.known[i.id] = true; for (const c of i.contents ?? []) know(c); };
+    know(copy);
   }
   // いちばん強い武器・防具を装備しておく（呪われた物は避ける）
   for (const slot of ['weapon', 'armor', 'charm', 'arrow'] as const) {

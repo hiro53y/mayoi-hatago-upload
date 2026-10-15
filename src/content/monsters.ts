@@ -252,17 +252,17 @@ MONSTERS.push(
   },
   {
     id: 'inn', name: '宿の主人', fam: 'npc', tier: 1, lv: 99, hp: 999, atk: 0, def: 99, exp: 0, spd: 0, move: 'walk', tag: 'human',
-    ability: { k: 'none' }, sprite: 'keeper', hue: 25, tone: 1.05, special: true,
+    ability: { k: 'none' }, sprite: 'inn', hue: 0, tone: 1, special: true,
     desc: '宿場の宿を営む主人。文を払えば、ひと晩でHPも満腹度もすっかり元通り。',
   },
   {
     id: 'bank', name: '倉庫番', fam: 'npc', tier: 1, lv: 99, hp: 999, atk: 0, def: 99, exp: 0, spd: 0, move: 'walk', tag: 'human',
-    ability: { k: 'none' }, sprite: 'keeper', hue: 180, tone: 0.95, special: true,
+    ability: { k: 'none' }, sprite: 'bank', hue: 0, tone: 1, special: true,
     desc: '預けた道具とお金を村の倉庫へ届けてくれる。冒険の途中で倒れても、預けた物は失わない。',
   },
   {
     id: 'seer', name: '辻占い', fam: 'npc', tier: 1, lv: 99, hp: 999, atk: 0, def: 99, exp: 0, spd: 0, move: 'walk', tag: 'human',
-    ability: { k: 'none' }, sprite: 'keeper', hue: 270, tone: 0.9, special: true,
+    ability: { k: 'none' }, sprite: 'seer', hue: 0, tone: 1, special: true,
     desc: '文を払えば、道具の正体を占ってくれる。',
   },
   {

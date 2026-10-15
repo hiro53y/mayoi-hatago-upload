@@ -1,4 +1,5 @@
 // 設定：音量・敵の動きの速さ・文字の大きさ
+import { BackupTools } from './BackupTools';
 import type { Settings } from '../engine/meta';
 
 export function SettingsBody({ settings, onChange }: { settings: Settings; onChange: (s: Settings) => void }) {
@@ -20,6 +21,7 @@ export function SettingsBody({ settings, onChange }: { settings: Settings; onCha
         <input type="checkbox" checked={settings.fast} onChange={(e) => set({ fast: e.target.checked })} />
         <span className="val">{settings.fast ? '速い' : 'ふつう'}</span>
       </label>
+      <label className="setting-row"><span>敵の段階を表示</span><input type="checkbox" checked={settings.tiers} onChange={(e) => set({ tiers: e.target.checked })} /><span className="val">{settings.tiers ? '表示' : '非表示'}</span></label>
       <div className="setting-row">
         <span>文字の大きさ</span>
         <div className="seg">
@@ -28,6 +30,7 @@ export function SettingsBody({ settings, onChange }: { settings: Settings; onCha
           ))}
         </div>
       </div>
+      <BackupTools />
     </div>
   );
 }

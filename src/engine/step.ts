@@ -2,7 +2,7 @@
 import { itemDef } from '../content/items';
 import { chance, int } from './rng';
 import { at, canStand, cheb, cornerOk, doorRoom, inside, isWall, monsterAt, roomAt, updateSight, visibleFrom } from './geo';
-import { buyPrice, charmIs, closeCtx, ev, hasSeal, itemName, log, makeCtx, type Ctx } from './core';
+import { buyPrice, charmIs, closeCtx, ev, hasUnpaid, hasSeal, itemName, log, makeCtx, type Ctx } from './core';
 import { hostile, hurtPlayer, identify, makeThief, maybeSpawn, onEnterRoom, teleportPlayer } from './actors';
 import { attackMonster, playerMelee } from './combat';
 import {
@@ -287,7 +287,7 @@ function npcAction(ctx: Ctx, a: Extract<Action, { t: 'npc' }>) {
     }
     const item = p.inv.find((i) => i.uid === a.target);
     if (!item) return;
-    if (item.shop) { log(ctx, '倉庫番「お店の品はお預かりできません」'); return; }
+    if (hasUnpaid(item)) { log(ctx, '倉庫番「お店の品はお預かりできません」'); return; }
     if (Object.values(p.eq).includes(item.uid) && item.cursed) { log(ctx, '呪われていて手放せない！', 'bad'); return; }
     for (const slot of ['weapon', 'armor', 'charm', 'arrow'] as const) if (p.eq[slot] === item.uid) delete p.eq[slot];
     p.inv.splice(p.inv.indexOf(item), 1);

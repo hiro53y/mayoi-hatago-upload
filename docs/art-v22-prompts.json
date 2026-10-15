@@ -1,0 +1,212 @@
+[
+  {
+    "key": "nekomata",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "Create ONE production game sprite on a truly transparent background. Use the attached original tanuki sprite ONLY as STYLE REFERENCE: Japanese fantasy yokai RPG, richly hand-painted miniature, dark brown fine outline, warm dimensional shading, textured fur/materials, cute 2-head chibi proportions, slightly top-down three-quarter view, readable silhouette at 40 pixels. SUBJECT: a mischievous Japanese nekomata mountain cat, tawny brown orange fur, TWO clearly separate curling tails, pointed ears, amber eyes, small paws, full body. One character centered, feet at the bottom with 8% transparent margin, no cast shadow beyond feet, no ground, no border, no lettering, no UI, no extra objects. Match the reference's illustration quality, not simplistic vector clip art. Square image, high quality. Do not draw the tanuki."
+  },
+  {
+    "key": "rokurokubi",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "Create ONE production Japanese fantasy RPG game sprite on a truly transparent background. Attached tanuki is ONLY the STYLE reference, never the subject. Match its richly hand-painted miniature style, fine dark brown contour, warm dimensional shading, subtle hand-painted texture, 2-head chibi proportions for characters, slightly top-down three-quarter view, exceptionally clear silhouette at 40 pixels. SUBJECT: a Japanese rokurokubi yokai lady in a deep purple kimono, pale expressive face and black hair in a bun, one elegantly curling long neck connecting head to body, friendly spooky expression, full body. One isolated subject centered, entire silhouette visible with 8% transparent margin, feet or base aligned near bottom. No backdrop, ground, cast shadow outside subject, border, text, labels, UI, watermark or tanuki. Square illustration. Do not use flat vector clip art. Preserve fine handmade material detail and game readability."
+  },
+  {
+    "key": "chouchin",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "Create ONE production Japanese fantasy RPG game sprite on a truly transparent background. Attached tanuki is ONLY the STYLE reference, never the subject. Match its richly hand-painted miniature style, fine dark brown contour, warm dimensional shading, subtle hand-painted texture, 2-head chibi proportions for characters, slightly top-down three-quarter view, exceptionally clear silhouette at 40 pixels. SUBJECT: a Japanese orange red paper lantern yokai, ONE large eye, curved playful mouth and long pink tongue, black wooden top and bottom rims, paper ribbing with detailed warm shading, floating full lantern. One isolated subject centered, entire silhouette visible with 8% transparent margin, feet or base aligned near bottom. No backdrop, ground, cast shadow outside subject, border, text, labels, UI, watermark or tanuki. Square illustration. Do not use flat vector clip art. Preserve fine handmade material detail and game readability."
+  },
+  {
+    "key": "honehoushi",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "Create ONE production Japanese fantasy RPG game sprite on a truly transparent background. Attached tanuki is ONLY the STYLE reference, never the subject. Match its richly hand-painted miniature style, fine dark brown contour, warm dimensional shading, subtle hand-painted texture, 2-head chibi proportions for characters, slightly top-down three-quarter view, exceptionally clear silhouette at 40 pixels. SUBJECT: a small skeletal Buddhist yokai monk, ivory skull with violet glowing eyes, deep purple monk robes, straw pilgrim hat and ring-topped wooden staff, full body. One isolated subject centered, entire silhouette visible with 8% transparent margin, feet or base aligned near bottom. No backdrop, ground, cast shadow outside subject, border, text, labels, UI, watermark or tanuki. Square illustration. Do not use flat vector clip art. Preserve fine handmade material detail and game readability."
+  },
+  {
+    "key": "tsuchigumo",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "Create ONE production Japanese fantasy RPG game sprite on a truly transparent background. Attached tanuki is ONLY the STYLE reference, never the subject. Match its richly hand-painted miniature style, fine dark brown contour, warm dimensional shading, subtle hand-painted texture, 2-head chibi proportions for characters, slightly top-down three-quarter view, exceptionally clear silhouette at 40 pixels. SUBJECT: a Japanese forest spider yokai, stout brown furry body with gold markings, eight clearly separate bent legs, small red glowing eyes, readable broad silhouette, full body. One isolated subject centered, entire silhouette visible with 8% transparent margin, feet or base aligned near bottom. No backdrop, ground, cast shadow outside subject, border, text, labels, UI, watermark or tanuki. Square illustration. Do not use flat vector clip art. Preserve fine handmade material detail and game readability."
+  },
+  {
+    "key": "baku",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "Create ONE production Japanese fantasy RPG game sprite on a truly transparent background. Attached tanuki is ONLY the STYLE reference, never the subject. Match its richly hand-painted miniature style, fine dark brown contour, warm dimensional shading, subtle hand-painted texture, 2-head chibi proportions for characters, slightly top-down three-quarter view, exceptionally clear silhouette at 40 pixels. SUBJECT: a Japanese dream eating baku yokai, small tapir-like body, short elephant trunk, black head and legs and creamy white middle, expressive golden eye, full body. One isolated subject centered, entire silhouette visible with 8% transparent margin, feet or base aligned near bottom. No backdrop, ground, cast shadow outside subject, border, text, labels, UI, watermark or tanuki. Square illustration. Do not use flat vector clip art. Preserve fine handmade material detail and game readability."
+  },
+  {
+    "key": "tengu",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "Create ONE production Japanese fantasy RPG game sprite on a truly transparent background. Attached tanuki is ONLY the STYLE reference, never the subject. Match its richly hand-painted miniature style, fine dark brown contour, warm dimensional shading, subtle hand-painted texture, 2-head chibi proportions for characters, slightly top-down three-quarter view, exceptionally clear silhouette at 40 pixels. SUBJECT: a small Japanese crow tengu yokai, crow beak and fierce amber eyes, dark feathered wings, green yamabushi robe and tiny black hat, holding a feather fan, full body. One isolated subject centered, entire silhouette visible with 8% transparent margin, feet or base aligned near bottom. No backdrop, ground, cast shadow outside subject, border, text, labels, UI, watermark or tanuki. Square illustration. Do not use flat vector clip art. Preserve fine handmade material detail and game readability."
+  },
+  {
+    "key": "gaki",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "One isolated production game sprite, truly transparent background. STYLE reference attached: richly hand-painted Japanese fantasy RPG miniature, fine dark brown outline, dimensional warm shading, detailed textures, cute 2-head chibi characters, slightly top-down three-quarter angle. SUBJECT: a small Japanese hungry ghost yokai, big expressive face, thin arms, round belly, muted green skin, dark small hair tuft, simple ragged waist cloth, spooky cute not grotesque, full body. Match reference illustration quality, NOT flat vector clipart. Full subject centered in square, 8% clear margin, feet or base at bottom. No ground, backdrop, exterior cast shadow, borders, UI, watermark, lettering, or tanuki. Readable at 40 pixels."
+  },
+  {
+    "key": "yukionna",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "One isolated production game sprite, truly transparent background. STYLE reference attached: richly hand-painted Japanese fantasy RPG miniature, fine dark brown outline, dimensional warm shading, detailed textures, cute 2-head chibi characters, slightly top-down three-quarter angle. SUBJECT: a small Japanese snow maiden yokai, flowing white kimono with pale blue hem, long black hair, pale delicate face, icy blue accents, full body, no large aura disc. Match reference illustration quality, NOT flat vector clipart. Full subject centered in square, 8% clear margin, feet or base at bottom. No ground, backdrop, exterior cast shadow, borders, UI, watermark, lettering, or tanuki. Readable at 40 pixels."
+  },
+  {
+    "key": "keeper",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "One isolated production game sprite, truly transparent background. STYLE reference attached: richly hand-painted Japanese fantasy RPG miniature, fine dark brown outline, dimensional warm shading, detailed textures, cute 2-head chibi characters, slightly top-down three-quarter angle. SUBJECT: a cheerful stocky Japanese shopkeeper man, indigo kimono, beige apron, red headband, holding small wooden abacus, warm smile and detailed cloth folds, full body. Match reference illustration quality, NOT flat vector clipart. Full subject centered in square, 8% clear margin, feet or base at bottom. No ground, backdrop, exterior cast shadow, borders, UI, watermark, lettering, or tanuki. Readable at 40 pixels."
+  },
+  {
+    "key": "inn",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "One isolated production game sprite, truly transparent background. STYLE reference attached: richly hand-painted Japanese fantasy RPG miniature, fine dark brown outline, dimensional warm shading, detailed textures, cute 2-head chibi characters, slightly top-down three-quarter angle. SUBJECT: a kindly older Japanese innkeeper man with silver hair and small moustache, warm brown kimono, cream towel over shoulder and wooden room key, welcoming pose, full body; clearly different from a shopkeeper. Match reference illustration quality, NOT flat vector clipart. Full subject centered in square, 8% clear margin, feet or base at bottom. No ground, backdrop, exterior cast shadow, borders, UI, watermark, lettering, or tanuki. Readable at 40 pixels."
+  },
+  {
+    "key": "bank",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "One isolated production game sprite, truly transparent background. STYLE reference attached: richly hand-painted Japanese fantasy RPG miniature, fine dark brown outline, dimensional warm shading, detailed textures, cute 2-head chibi characters, slightly top-down three-quarter angle. SUBJECT: a dependable stocky Japanese warehouse attendant woman, teal work kimono, hair tied back, carrying a small wooden storage box bound with rope, full body; clearly different from a shopkeeper. Match reference illustration quality, NOT flat vector clipart. Full subject centered in square, 8% clear margin, feet or base at bottom. No ground, backdrop, exterior cast shadow, borders, UI, watermark, lettering, or tanuki. Readable at 40 pixels."
+  },
+  {
+    "key": "seer",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "One isolated production game sprite, truly transparent background. STYLE reference attached: richly hand-painted Japanese fantasy RPG miniature, fine dark brown outline, dimensional warm shading, detailed textures, cute 2-head chibi characters, slightly top-down three-quarter angle. SUBJECT: an elderly Japanese fortune teller woman, violet layered robe, grey hair, closed folding fan and small divination beads, wise face, full body; clearly different from a shopkeeper. Match reference illustration quality, NOT flat vector clipart. Full subject centered in square, 8% clear margin, feet or base at bottom. No ground, backdrop, exterior cast shadow, borders, UI, watermark, lettering, or tanuki. Readable at 40 pixels."
+  },
+  {
+    "key": "oni",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "One isolated production game sprite, truly transparent background. STYLE reference attached: richly hand-painted Japanese fantasy RPG miniature, fine dark brown outline, dimensional warm shading, detailed textures, cute 2-head chibi characters, slightly top-down three-quarter angle. SUBJECT: a mighty chibi Japanese oni king boss, red skin, two ivory horns, shaggy black hair, fierce amber eyes, tiger-striped golden waistcloth, heavy iron-studded wooden club, full body with powerful commanding pose. Match reference illustration quality, NOT flat vector clipart. Full subject centered in square, 8% clear margin, feet or base at bottom. No ground, backdrop, exterior cast shadow, borders, UI, watermark, lettering, or tanuki. Readable at 40 pixels."
+  },
+  {
+    "key": "item-staff",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "One isolated production game sprite, truly transparent background. STYLE reference attached: richly hand-painted Japanese fantasy RPG miniature, fine dark brown outline, dimensional warm shading, detailed textures, cute 2-head chibi characters, slightly top-down three-quarter angle. SUBJECT: ONE Japanese fantasy wooden magic staff, diagonally from lower left to upper right, polished carved brown wood, small luminous pale blue crystal at the top, wrapped gold bands and a small red cord, richly textured collectible item icon, no character. Match reference illustration quality, NOT flat vector clipart. Full subject centered in square, 8% clear margin, feet or base at bottom. No ground, backdrop, exterior cast shadow, borders, UI, watermark, lettering, or tanuki. Readable at 40 pixels."
+  },
+  {
+    "key": "item-pot",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "One isolated production game sprite, truly transparent background. STYLE reference attached: richly hand-painted Japanese fantasy RPG miniature, fine dark brown outline, dimensional warm shading, detailed textures, cute 2-head chibi characters, slightly top-down three-quarter angle. SUBJECT: ONE Japanese ceramic storage jar, round ochre glazed body, short neck and open dark mouth, cobalt blue decorative band, warm highlights and ceramic texture, collectible item icon, no character. Match reference illustration quality, NOT flat vector clipart. Full subject centered in square, 8% clear margin, feet or base at bottom. No ground, backdrop, exterior cast shadow, borders, UI, watermark, lettering, or tanuki. Readable at 40 pixels."
+  },
+  {
+    "key": "item-arrow",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "One isolated production game sprite, truly transparent background. STYLE reference attached: richly hand-painted Japanese fantasy RPG miniature, fine dark brown outline, dimensional warm shading, detailed textures, cute 2-head chibi characters, slightly top-down three-quarter angle. SUBJECT: ONE bundle of THREE wooden Japanese arrows diagonally from lower left to upper right, visible steel arrowheads, pale feather fletching, tied at middle with red string, clear handcrafted texture, collectible item icon, no character. Match reference illustration quality, NOT flat vector clipart. Full subject centered in square, 8% clear margin, feet or base at bottom. No ground, backdrop, exterior cast shadow, borders, UI, watermark, lettering, or tanuki. Readable at 40 pixels."
+  },
+  {
+    "key": "item-gold",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "One isolated production game sprite, truly transparent background. STYLE reference attached: richly hand-painted Japanese fantasy RPG miniature, fine dark brown outline, dimensional warm shading, detailed textures, cute 2-head chibi characters, slightly top-down three-quarter angle. SUBJECT: a small pile of THREE Japanese gold coins with square holes, one upright coin behind two overlapping horizontal coins, embossed metal detail with warm gold highlights, collectible item icon, no lettering, no character. Match reference illustration quality, NOT flat vector clipart. Full subject centered in square, 8% clear margin, feet or base at bottom. No ground, backdrop, exterior cast shadow, borders, UI, watermark, lettering, or tanuki. Readable at 40 pixels."
+  },
+  {
+    "key": "item-sanctuary",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "One isolated production game sprite, truly transparent background. STYLE reference attached: richly hand-painted Japanese fantasy RPG miniature, fine dark brown outline, dimensional warm shading, detailed textures, cute 2-head chibi characters, slightly top-down three-quarter angle. SUBJECT: ONE Japanese magical scroll unfurled, cream parchment with golden circular four-direction protective emblem, two dark wooden rollers on left and right, red binding cord, richly shaded parchment, no writing or letters, collectible item icon. Match reference illustration quality, NOT flat vector clipart. Full subject centered in square, 8% clear margin, feet or base at bottom. No ground, backdrop, exterior cast shadow, borders, UI, watermark, lettering, or tanuki. Readable at 40 pixels."
+  },
+  {
+    "key": "trap-warp",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "One isolated production game sprite, truly transparent background. STYLE reference attached: richly hand-painted Japanese fantasy RPG miniature, fine dark brown outline, dimensional warm shading, detailed textures, cute 2-head chibi characters, slightly top-down three-quarter angle. SUBJECT: ONE floor trap: low oval weathered stone and iron plate, inset PURPLE spiral vortex with tiny magical sparks, slightly top down three-quarter angle, readable at 40 pixels. Match reference illustration quality, NOT flat vector clipart. Full subject centered in square, 8% clear margin, feet or base at bottom. No ground, backdrop, exterior cast shadow, borders, UI, watermark, lettering, or tanuki. Readable at 40 pixels."
+  },
+  {
+    "key": "trap-spin",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "One isolated production game sprite, truly transparent background. STYLE reference attached: richly hand-painted Japanese fantasy RPG miniature, fine dark brown outline, dimensional warm shading, detailed textures, cute 2-head chibi characters, slightly top-down three-quarter angle. SUBJECT: ONE floor trap: low oval weathered stone and iron plate, inset GOLDEN circular rotating arrow symbol, slightly top down three-quarter angle, readable at 40 pixels. Match reference illustration quality, NOT flat vector clipart. Full subject centered in square, 8% clear margin, feet or base at bottom. No ground, backdrop, exterior cast shadow, borders, UI, watermark, lettering, or tanuki. Readable at 40 pixels."
+  },
+  {
+    "key": "trap-sleep",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "One isolated production game sprite, truly transparent background. STYLE reference attached: richly hand-painted Japanese fantasy RPG miniature, fine dark brown outline, dimensional warm shading, detailed textures, cute 2-head chibi characters, slightly top-down three-quarter angle. SUBJECT: ONE floor trap: low oval weathered stone and iron plate, inset VIOLET crescent moon with two small stars and faint sleeping mist, no letters, slightly top down three-quarter angle, readable at 40 pixels. Match reference illustration quality, NOT flat vector clipart. Full subject centered in square, 8% clear margin, feet or base at bottom. No ground, backdrop, exterior cast shadow, borders, UI, watermark, lettering, or tanuki. Readable at 40 pixels."
+  },
+  {
+    "key": "trap-rust",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "One isolated production game sprite, truly transparent background. STYLE reference attached: richly hand-painted Japanese fantasy RPG miniature, fine dark brown outline, dimensional warm shading, detailed textures, cute 2-head chibi characters, slightly top-down three-quarter angle. SUBJECT: ONE floor trap: low oval weathered stone and iron plate, inset corroded ORANGE broken sword emblem and red rust flakes, slightly top down three-quarter angle, readable at 40 pixels. Match reference illustration quality, NOT flat vector clipart. Full subject centered in square, 8% clear margin, feet or base at bottom. No ground, backdrop, exterior cast shadow, borders, UI, watermark, lettering, or tanuki. Readable at 40 pixels."
+  },
+  {
+    "key": "trap-hunger",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "One isolated production game sprite, truly transparent background. STYLE reference attached: richly hand-painted Japanese fantasy RPG miniature, fine dark brown outline, dimensional warm shading, detailed textures, cute 2-head chibi characters, slightly top-down three-quarter angle. SUBJECT: ONE floor trap: low oval weathered stone and iron plate, inset empty beige wooden rice bowl and crossed chopsticks, slightly top down three-quarter angle, readable at 40 pixels. Match reference illustration quality, NOT flat vector clipart. Full subject centered in square, 8% clear margin, feet or base at bottom. No ground, backdrop, exterior cast shadow, borders, UI, watermark, lettering, or tanuki. Readable at 40 pixels."
+  },
+  {
+    "key": "trap-summon",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "One isolated production game sprite, truly transparent background. STYLE reference attached: richly hand-painted Japanese fantasy RPG miniature, fine dark brown outline, dimensional warm shading, detailed textures, cute 2-head chibi characters, slightly top-down three-quarter angle. SUBJECT: ONE floor trap: low oval weathered stone and iron plate, inset RED small Japanese temple bell emblem, slightly top down three-quarter angle, readable at 40 pixels. Match reference illustration quality, NOT flat vector clipart. Full subject centered in square, 8% clear margin, feet or base at bottom. No ground, backdrop, exterior cast shadow, borders, UI, watermark, lettering, or tanuki. Readable at 40 pixels."
+  },
+  {
+    "key": "trap-gust",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "One isolated production game sprite, truly transparent background. STYLE reference attached: richly hand-painted Japanese fantasy RPG miniature, fine dark brown outline, dimensional warm shading, detailed textures, cute 2-head chibi characters, slightly top-down three-quarter angle. SUBJECT: ONE floor trap: low oval weathered stone and iron plate, inset CYAN curling wind gust emblem with three distinct curved streams, slightly top down three-quarter angle, readable at 40 pixels. Match reference illustration quality, NOT flat vector clipart. Full subject centered in square, 8% clear margin, feet or base at bottom. No ground, backdrop, exterior cast shadow, borders, UI, watermark, lettering, or tanuki. Readable at 40 pixels."
+  },
+  {
+    "key": "trap-slow",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "One isolated production game sprite, truly transparent background. STYLE reference attached: richly hand-painted Japanese fantasy RPG miniature, fine dark brown outline, dimensional warm shading, detailed textures, cute 2-head chibi characters, slightly top-down three-quarter angle. SUBJECT: ONE floor trap: low oval weathered stone and iron plate, inset GREEN snail emblem with a spiral shell, slightly top down three-quarter angle, readable at 40 pixels. Match reference illustration quality, NOT flat vector clipart. Full subject centered in square, 8% clear margin, feet or base at bottom. No ground, backdrop, exterior cast shadow, borders, UI, watermark, lettering, or tanuki. Readable at 40 pixels."
+  },
+  {
+    "key": "trap-curse",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "One isolated production game sprite, truly transparent background. STYLE reference attached: richly hand-painted Japanese fantasy RPG miniature, fine dark brown outline, dimensional warm shading, detailed textures, cute 2-head chibi characters, slightly top-down three-quarter angle. SUBJECT: ONE floor trap: low oval weathered stone and iron plate, inset MAGENTA ghostly skull emblem with tiny purple sparks, slightly top down three-quarter angle, readable at 40 pixels. Match reference illustration quality, NOT flat vector clipart. Full subject centered in square, 8% clear margin, feet or base at bottom. No ground, backdrop, exterior cast shadow, borders, UI, watermark, lettering, or tanuki. Readable at 40 pixels."
+  },
+  {
+    "key": "trap-poison",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "One isolated production game sprite, truly transparent background. STYLE reference attached: richly hand-painted Japanese fantasy RPG miniature, fine dark brown outline, dimensional warm shading, detailed textures, cute 2-head chibi characters, slightly top-down three-quarter angle. SUBJECT: ONE floor trap: low oval weathered stone and iron plate, inset PURPLE poison droplet and small dart emblem, slightly top down three-quarter angle, readable at 40 pixels. Match reference illustration quality, NOT flat vector clipart. Full subject centered in square, 8% clear margin, feet or base at bottom. No ground, backdrop, exterior cast shadow, borders, UI, watermark, lettering, or tanuki. Readable at 40 pixels."
+  },
+  {
+    "key": "trap-arrow",
+    "reference": "public/assets/sprites/v2/enemy-tanuki.png",
+    "tool": "built-in image_gen",
+    "transparent_background": true,
+    "prompt": "One isolated production game sprite, truly transparent background. STYLE reference attached: richly hand-painted Japanese fantasy RPG miniature, fine dark brown outline, dimensional warm shading, detailed textures, cute 2-head chibi characters, slightly top-down three-quarter angle. SUBJECT: ONE floor trap: low oval weathered stone and iron plate, inset SILVER steel arrowhead pointing diagonally and mechanical bolt groove, slightly top down three-quarter angle, readable at 40 pixels. Match reference illustration quality, NOT flat vector clipart. Full subject centered in square, 8% clear margin, feet or base at bottom. No ground, backdrop, exterior cast shadow, borders, UI, watermark, lettering, or tanuki. Readable at 40 pixels."
+  }
+]

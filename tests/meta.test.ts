@@ -108,7 +108,7 @@ describe('村', () => {
     expect(loadRun(kv)?.seed).toBe(run.seed);
     run.end = { kind: 'dead', cause: 'x', floor: 1 };
     saveRun(run, kv);
-    expect(kv.data[KEY_RUN]).toBeUndefined();
+    expect(loadRun(kv)?.end?.kind).toBe('dead');
     kv.data[KEY_META] = '{broken';
     expect(loadMeta(kv).gold).toBe(500);
   });

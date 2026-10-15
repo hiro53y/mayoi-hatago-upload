@@ -176,3 +176,8 @@ export function monName(m: Monster): string {
 export function damageRoll(atk: number, def: number, k: number, roll: number): number {
   return Math.max(1, Math.round(atk * (0.88 + roll * 0.24) * (k / (k + Math.max(0, def)))));
 }
+
+/** 未払いの品は壺の中身も含めて扱う。 */
+export function hasUnpaid(item: Item): boolean {
+  return !!item.shop || !!item.contents?.some(hasUnpaid);
+}

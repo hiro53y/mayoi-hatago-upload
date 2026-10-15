@@ -1,3 +1,4 @@
+import { tierLabel } from './tier';
 // 迷宮の描画（Canvas 2D）：地形・道具・罠・キャラ・演出・ミニマップ。出来事を順に再生して動きを見せる
 import { monDef } from '../content/monsters';
 import { at, visibleFrom } from '../engine/geo';
@@ -30,6 +31,7 @@ type Step = { dur: number; start: () => void };
 
 export interface ViewOptions {
   fast: boolean;
+  tiers: boolean;
 }
 
 export class Renderer {
@@ -54,7 +56,7 @@ export class Renderer {
   tile = 40;
   /** ミニマップ：0=非表示、1=重ねて表示、2=全面 */
   mini: 0 | 1 | 2 = 1;
-  opts: ViewOptions = { fast: false };
+  opts: ViewOptions = { fast: false, tiers: true };
   private quick = false;
   private banner: { title: string; sub: string; t0: number; boss: boolean; town: boolean } | null = null;
   private shakeT0 = 0;
@@ -459,6 +461,14 @@ export class Renderer {
         g.filter = 'none';
       }
       g.globalAlpha = 1;
+      const stageLabel = tierLabel(m, vis.has(tileIndex) && !ent.dying, this.opts.tiers);
+      if (stageLabel) {
+        const label = stageLabel;
+        g.font = `bold ${Math.max(11, Math.round(T * 0.29))}px sans-serif`;
+        g.textAlign = 'left'; g.lineWidth = 3; g.strokeStyle = '#171018'; g.fillStyle = '#ffe5a2';
+        const bx = originX + pos.x * T + T * 0.05, by = originY + pos.y * T + T * 0.19;
+        g.strokeText(label, bx, by); g.fillText(label, bx, by);
+      }
       // HPの棒・状態の印
       if (m && !ent.dying && vis.has(tileIndex)) {
         if (m.hp < m.maxHp) {

@@ -2,7 +2,7 @@
 import { itemDef } from '../content/items';
 import { NORMAL_MONSTERS } from '../content/monsters';
 import { MODE_FLOORS, TITLES } from '../content/world';
-import { buyPrice, sellPrice } from './core';
+import { buyPrice, hasUnpaid, sellPrice } from './core';
 import { createRun } from './run';
 import { hashSeed } from './rng';
 import type { Item, Run, RunMode } from './types';
@@ -29,6 +29,7 @@ export interface Settings {
   se: number;
   /** 敵の動きを速く見せる */
   fast: boolean;
+  tiers: boolean;
   text: 's' | 'm' | 'l';
 }
 
@@ -44,6 +45,7 @@ export interface Meta {
   titles: string[];
   deepUnlocked: boolean;
   settings: Settings;
+  lastFinalized?: string;
 }
 
 export function defaultMeta(): Meta {
@@ -58,7 +60,7 @@ export function defaultMeta(): Meta {
     daily: {},
     titles: [],
     deepUnlocked: false,
-    settings: { bgm: 0.5, se: 0.7, fast: false, text: 'm' },
+    settings: { bgm: 0.5, se: 0.7, fast: false, tiers: true, text: 'm' },
   };
 }
 
@@ -128,10 +130,10 @@ export function finishRun(meta: Meta, run: Run, now = new Date()): Summary {
   const bringsBack = (end.kind === 'return' || end.kind === 'clear') && (run.mode === 'main' || run.mode === 'deep');
   if (bringsBack) {
     for (const item of p.inv) {
-      if (item.shop) continue;
+      if (hasUnpaid(item)) continue;
       const copy = JSON.parse(JSON.stringify(item)) as Item;
-      copy.uid = meta.nextUid++;
-      for (const inner of copy.contents ?? []) inner.uid = meta.nextUid++;
+      const assign = (i: Item) => { i.uid = meta.nextUid++; for (const c of i.contents ?? []) assign(c); };
+      assign(copy);
       copy.known = true;
       if (meta.storage.length < STORAGE_MAX) { meta.storage.push(copy); kept.push(copy); } else lost.push(copy);
     }
@@ -144,8 +146,8 @@ export function finishRun(meta: Meta, run: Run, now = new Date()): Summary {
   const deposited: Item[] = [];
   for (const item of run.deposit ?? []) {
     const copy = JSON.parse(JSON.stringify(item)) as Item;
-    copy.uid = meta.nextUid++;
-    for (const inner of copy.contents ?? []) inner.uid = meta.nextUid++;
+    const assign = (i: Item) => { i.uid = meta.nextUid++; for (const c of i.contents ?? []) assign(c); };
+    assign(copy);
     copy.known = true;
     if (meta.storage.length < STORAGE_MAX) { meta.storage.push(copy); deposited.push(copy); } else lost.push(copy);
   }

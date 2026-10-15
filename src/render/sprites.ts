@@ -1,5 +1,4 @@
-// 絵の読み込み：元の PNG と、描き足した SVG。色違い（色相・明るさ）は読み込み時に作って使い回す
-import { ITEM_ART, MONSTER_ART, TRAP_ART } from '../art/monsters';
+// 絵の読み込み：維持する既存 PNG と、画風を揃えた v2.2 PNG。色違い（色相・明るさ）は読み込み時に作って使い回す
 import { itemDef } from '../content/items';
 import { monDef } from '../content/monsters';
 
@@ -8,7 +7,8 @@ const PNG = [
   'enemy-rust-armor', 'enemy-shadow', 'item-herb', 'item-food', 'item-weapon', 'item-armor', 'item-offense', 'item-support', 'stairs',
   'trap-spike', 'trap-net', 'trap-fire',
 ];
-const VERSION = '20261014';
+const VERSION = '20261015-v22';
+const NEW_PNG = ['nekomata', 'rokurokubi', 'chouchin', 'honehoushi', 'tsuchigumo', 'baku', 'tengu', 'gaki', 'yukionna', 'keeper', 'inn', 'bank', 'seer', 'oni', 'item-staff', 'item-pot', 'item-arrow', 'item-gold', 'item-sanctuary', 'trap-warp', 'trap-spin', 'trap-sleep', 'trap-rust', 'trap-hunger', 'trap-summon', 'trap-gust', 'trap-slow', 'trap-curse', 'trap-poison', 'trap-arrow'];
 export const SPRITE_PX = 128;
 
 const images = new Map<string, HTMLImageElement>();
@@ -25,43 +25,14 @@ function loadImage(key: string, src: string): Promise<void> {
   });
 }
 
-function svgUrl(svg: string): string {
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-}
-
 /** すべての絵を読み込む（1回だけ） */
 export function loadSprites(): Promise<void> {
   if (loading) return loading;
   const jobs: Promise<void>[] = [];
   for (const name of PNG) jobs.push(loadImage(name, `/assets/sprites/v2/${name}.png?v=${VERSION}`));
-  for (const [name, svg] of Object.entries(MONSTER_ART)) { painted.add(name); jobs.push(loadImage(name, svgUrl(svg))); }
-  for (const [name, svg] of Object.entries(ITEM_ART)) { painted.add(`item-${name}`); jobs.push(loadImage(`item-${name}`, svgUrl(svg))); }
-  for (const [name, svg] of Object.entries(TRAP_ART)) jobs.push(loadImage(`trap-${name}`, svgUrl(svg)));
+  for (const name of NEW_PNG) jobs.push(loadImage(name, `/assets/sprites/v22/${name}.png?v=${VERSION}`));
   loading = Promise.all(jobs).then(() => undefined);
   return loading;
-}
-
-/** 描き足した絵（SVG）は、元の絵に近づけるため陰影と質感を重ねる */
-const painted = new Set<string>();
-
-function paint(g: CanvasRenderingContext2D) {
-  const S = SPRITE_PX;
-  g.save();
-  g.globalCompositeOperation = 'source-atop';
-  const shade = g.createLinearGradient(0, 0, S * 0.3, S);
-  shade.addColorStop(0, 'rgba(255,236,200,0.16)');
-  shade.addColorStop(0.55, 'rgba(0,0,0,0)');
-  shade.addColorStop(1, 'rgba(24,10,30,0.42)');
-  g.fillStyle = shade;
-  g.fillRect(0, 0, S, S);
-  // 筆の跡のような細かいまだら
-  let seed = 12345;
-  const rnd = () => ((seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff);
-  for (let i = 0; i < 900; i++) {
-    g.fillStyle = rnd() > 0.5 ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.08)';
-    g.fillRect(rnd() * S, rnd() * S, 1 + rnd() * 2, 1 + rnd() * 2);
-  }
-  g.restore();
 }
 
 /** 絵（色違いを含む）を 128px のキャンバスで返す */
@@ -78,7 +49,6 @@ export function sprite(key: string, hue = 0, tone = 1): HTMLCanvasElement | null
   g.imageSmoothingQuality = 'high';
   g.drawImage(img, 0, 0, SPRITE_PX, SPRITE_PX);
   g.filter = 'none';
-  if (painted.has(key)) paint(g);
   cache.set(ck, c);
   return c;
 }

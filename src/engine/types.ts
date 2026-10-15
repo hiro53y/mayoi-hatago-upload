@@ -198,6 +198,8 @@ export interface RunEnd {
 }
 
 export interface Run {
+  /** 終了処理の二重加算を防ぐ識別子（旧セーブは終了時に付与）。 */
+  completionId?: string;
   v: number;
   mode: RunMode;
   seed: number;

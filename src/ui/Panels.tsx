@@ -3,7 +3,7 @@ import { itemDef, ITEMS } from '../content/items';
 import { monDef, type Ability } from '../content/monsters';
 import { TRAP_BY_ID } from '../content/world';
 import { at, visibleFrom } from '../engine/geo';
-import { buyPrice, charmIs, equipped, expFor, isEquipped, playerAttack, playerDefense, sealDesc, sealsOf, sellPrice, typeKnown } from '../engine/core';
+import { buyPrice, charmIs, equipped, expFor, hasUnpaid, isEquipped, playerAttack, playerDefense, sealDesc, sealsOf, sellPrice, typeKnown } from '../engine/core';
 import { npcCost } from '../engine/step';
 import type { Action, Item, Monster, NpcKind, Run } from '../engine/types';
 import { ItemIcon, Modal, MonsterIcon, itemLabel } from './common';
@@ -34,7 +34,7 @@ export function NpcDialog({ run, who, act }: { run: Run; who: NpcKind; act: (a: 
             <button disabled={p.gold <= 0} onClick={() => act({ t: 'npc', who: 'bank', gold: true })}>お金をすべて預ける</button>
           </div>
           <div className="inv-list">
-            {p.inv.filter((i) => !i.shop).map((item) => (
+            {p.inv.filter((i) => !hasUnpaid(i)).map((item) => (
               <button key={item.uid} className={`inv-row ${isEquipped(run, item) ? 'equipped' : ''}`} onClick={() => act({ t: 'npc', who: 'bank', target: item.uid })}>
                 <ItemIcon id={item.id} size={28} /><span className="inv-name">{itemLabel(run, item)}</span><small className="inv-extra">預ける</small>
               </button>
