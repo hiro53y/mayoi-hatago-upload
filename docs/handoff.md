@@ -5,7 +5,7 @@
 - 追加画像30点は `public/assets/sprites/v22/`。元PNG21点はSHA-256が変更前と一致。内蔵image_genを使用し、全プロンプトは `docs/art-v22-prompts.json`。
 - 保存の実装は `src/engine/save.ts`、設定内の書き出し／復元は `src/ui/BackupTools.tsx`。未払いの判定はcore.hasUnpaid。88件成功・2件スキップ、ビルド成功。詳細は `tests/test_checklist.md`。
 - 終了済みのrunも村への反映前は保持する仕様。saveRun(end)を呼ぶだけで削除する旧仕様へ戻さない。
-- 公開は既存GitHub main→Cloudflare Pages。公開版の読み戻しは公開後の記録を参照。
+- 公開は既存GitHub main→Cloudflare Pages。2026-10-16に公開画面v2.2、55ファイルの一致を確認済み。実装コミット287adba。
 - Pixel実機の見た目・操作・PWA更新、人による本編30階／深層99階通しプレイは未検証。
 
 ---
