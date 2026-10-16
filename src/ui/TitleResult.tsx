@@ -23,7 +23,7 @@ export function TitleScreen(props: { hasRun: boolean; runInfo: string; onStart: 
             <button className="primary" onClick={click(props.onStart)}>はじめる<small>村へ</small></button>
           )}
         </div>
-        <p className="credit">v2.2 ・ 毎回形の変わる迷宮で、一手ずつ生き延びよう</p>
+        <p className="credit">v2.2.1 ・ 毎回形の変わる迷宮で、一手ずつ生き延びよう</p>
       </div>
     </div>
   );

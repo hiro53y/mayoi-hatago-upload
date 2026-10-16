@@ -1,7 +1,7 @@
 // 保存と復元。読み込み時はデータを消さず、終了処理は村への反映後にだけ片付ける。
 import { ITEM_BY_ID } from '../content/items';
 import { MON_BY_ID } from '../content/monsters';
-import { TRAP_BY_ID } from '../content/world';
+import { MODE_FLOORS, TRAP_BY_ID } from '../content/world';
 import { defaultMeta, finishRun, META_VERSION, type Meta, type Summary } from './meta';
 import { RUN_VERSION } from './run';
 import type { Item, Run } from './types';
@@ -74,7 +74,7 @@ export function validRun(value: unknown): value is Run {
     }
     if (!Array.isArray(f.traps) || !f.traps.every((v: unknown) => pos(v) && obj(v) && trapId(v.id) && typeof v.found === 'boolean')) return false;
     if (!boolMap(r.known, (id) => itemId(id)) || !obj(r.fake) || !obj(r.named) || ![r.fake, r.named].every((v) => Object.entries(v).every(([k, s]) => itemId(k) && typeof s === 'string'))) return false;
-    if (!nums(r.stats, ['kills', 'turns', 'maxFloor', 'itemsUsed', 'synth', 'stolen', 'allies']) || !obj(r.stats.killedIds) || !Object.entries(r.stats.killedIds).every(([k, n]) => monId(k) && int(n)) || !boolMap(r.stats.seenIds, (id) => monId(id))) return false;
+    if (!nums(r.stats, ['kills', 'turns', 'maxFloor', 'itemsUsed', 'synth', 'stolen', 'allies']) || !obj(r.stats.killedIds) || !Object.entries(r.stats.killedIds).every(([, n]) => int(n)) || !boolMap(r.stats.seenIds, () => true)) return false;
     if (!Array.isArray(r.log) || !r.log.every((l: unknown) => obj(l) && typeof l.t === 'string' && (l.c === undefined || ['good', 'bad', 'info', 'item', 'warn'].includes(l.c)))) return false;
     if (typeof r.thief !== 'boolean' || r.banned !== undefined && !boolMap(r.banned, (id) => monId(id))) return false;
     if (r.end !== null && (!obj(r.end) || !['dead', 'clear', 'return', 'quit'].includes(r.end.kind) || typeof r.end.cause !== 'string' || !int(r.end.floor, 1, 99))) return false;
@@ -95,8 +95,22 @@ export function deserializeRun(text: string | null): Run | null {
   if (!text) return null;
   try {
     const r = JSON.parse(text);
-    // 2.0に存在した番人だけを互換処理する。不明な敵を黙って消さない。
-    if (obj(r) && Array.isArray(r.monsters)) r.monsters = r.monsters.filter((m: unknown) => !(obj(m) && m.id === 'guard'));
+    if (obj(r) && obj(r.player) && obj(r.floor)) {
+      const p = r.player, f = r.floor;
+      p.st ??= {}; p.eq ??= {}; p.regen ??= 0; p.hungerAcc ??= 0;
+      p.exp ??= 0; p.str ??= 8; p.maxStr ??= p.str; p.maxHunger ??= 100; p.gold ??= 0;
+      r.known ??= {}; r.fake ??= {}; r.named ??= {};
+      r.end ??= null; r.prompt ??= null; r.thief ??= false; r.spawnIn ??= 40;
+      r.lastFloor ??= MODE_FLOORS[r.mode as Run['mode']];
+      f.house ??= -1; f.houseAwake ??= false; f.turns ??= 0;
+      f.dark ??= false; f.fog ??= false; f.shop ??= null;
+      const stats = { kills: 0, turns: r.turn ?? 0, maxFloor: r.floorNo ?? 1, itemsUsed: 0, synth: 0, stolen: 0, allies: 0, killedIds: {}, seenIds: {} };
+      r.stats = { ...stats, ...(obj(r.stats) ? r.stats : {}) };
+      if (Array.isArray(r.monsters)) {
+        r.monsters = r.monsters.filter((m: unknown) => !(obj(m) && m.id === 'guard'));
+        for (const m of r.monsters) if (obj(m)) { m.st ??= {}; m.dir ??= 4; }
+      }
+    }
     return validRun(r) ? r : null;
   } catch { return null; }
 }
@@ -106,8 +120,22 @@ export function deserializeMeta(text: string | null): Meta | null {
   if (!text) return null;
   try {
     const m = JSON.parse(text);
-    if (!obj(m) || m.v !== META_VERSION || !int(m.gold) || !int(m.nextUid, 1) || !validItems(m.storage) || !obj(m.book) || !obj(m.book.mon) || !boolMap(m.book.item, (id) => itemId(id)) || !obj(m.records) || !Array.isArray(m.records.runs) || !obj(m.records.best) || !obj(m.records.clears) || !obj(m.daily) || !Array.isArray(m.titles) || !m.titles.every((t: unknown) => typeof t === 'string') || typeof m.deepUnlocked !== 'boolean') return null;
-    if (!Object.entries(m.book.mon).every(([id, b]) => monId(id) && obj(b) && int(b.kills))) return null;
+    if (obj(m) && m.v === META_VERSION) {
+      const base = defaultMeta();
+      m.gold ??= base.gold; m.storage ??= []; m.nextUid ??= 1;
+      m.book = { ...base.book, ...(obj(m.book) ? m.book : {}) };
+      m.records = { ...base.records, ...(obj(m.records) ? m.records : {}) };
+      m.records.best = { ...base.records.best, ...(obj(m.records.best) ? m.records.best : {}) };
+      m.records.clears = { ...base.records.clears, ...(obj(m.records.clears) ? m.records.clears : {}) };
+      m.settings = { ...base.settings, ...(obj(m.settings) ? m.settings : {}) };
+      m.daily ??= {}; m.titles ??= []; m.deepUnlocked ??= false;
+      if (Array.isArray(m.storage)) {
+        const used = (items: Item[]): number => items.reduce((n, i) => Math.max(n, num(i?.uid) ? i.uid : 0, Array.isArray(i?.contents) ? used(i.contents) : 0), 0);
+        m.nextUid = Math.max(m.nextUid, used(m.storage) + 1);
+      }
+    }
+    if (!obj(m) || m.v !== META_VERSION || !int(m.gold) || !int(m.nextUid, 1) || !validItems(m.storage) || !obj(m.book) || !obj(m.book.mon) || !boolMap(m.book.item, () => true) || !obj(m.records) || !Array.isArray(m.records.runs) || !obj(m.records.best) || !obj(m.records.clears) || !obj(m.daily) || !Array.isArray(m.titles) || !m.titles.every((t: unknown) => typeof t === 'string') || typeof m.deepUnlocked !== 'boolean') return null;
+    if (!Object.entries(m.book.mon).every(([, b]) => obj(b) && int(b.kills))) return null;
     if (!int(m.records.kills) || !int(m.records.plays) || ![m.records.best, m.records.clears].every((v) => Object.entries(v).every(([k, n]) => modes.includes(k) && int(n)))) return null;
     if (!m.records.runs.every((v: unknown) => obj(v) && typeof v.at === 'string' && modes.includes(v.mode) && ['dead', 'clear', 'return', 'quit'].includes(v.kind) && typeof v.cause === 'string' && ['floor', 'lv', 'kills', 'turns'].every((k) => int(v[k])) && (v.score === undefined || int(v.score)))) return null;
     if (!Object.entries(m.daily).every(([day, v]) => /^\d{4}-\d{2}-\d{2}$/.test(day) && obj(v) && int(v.score) && int(v.floor) && typeof v.cleared === 'boolean')) return null;
@@ -121,90 +149,51 @@ export function deserializeMeta(text: string | null): Meta | null {
   } catch { return null; }
 }
 
-let problem = '';
-const failures = new Set<string>();
+/** 保存が使えなくても画面の進行は止めない。 */
 export function storage(): KV | null { try { return globalThis.localStorage ?? null; } catch { return null; } }
-export function saveProblem() { return problem; }
-function report(key: string, ok: boolean) {
-  if (ok) failures.delete(key); else failures.add(key);
-  problem = failures.size ? '保存できていません。容量やブラウザーの設定をご確認ください。再試行するか、バックアップを書き出してください。' : '';
-  if (typeof window !== 'undefined') window.dispatchEvent(new Event('fdm-save-status'));
-  return ok;
+export const PRESERVED_PREFIX = 'fdm2:preserved-before-v221:';
+
+function preserveRaw(kv: KV, key: string, raw: string): void {
+  let suffix = 0;
+  while (suffix < 10000) {
+    const archiveKey = `${PRESERVED_PREFIX}${key}${suffix ? ':' + suffix : ''}`;
+    const archived = kv.getItem(archiveKey);
+    if (archived === raw) return;
+    if (archived === null) { kv.setItem(archiveKey, raw); return; }
+    suffix++;
+  }
+  throw new Error('Preservation storage is full');
 }
-function put(key: string, value: string | null, kv: KV | null) {
-  if (!kv) return report(key, false);
-  try { if (value === null) kv.removeItem(key); else kv.setItem(key, value); return report(key, true); }
-  catch { return report(key, false); }
+
+function put(key: string, value: string | null, kv: KV | null): boolean {
+  if (!kv) return false;
+  try {
+    // 起動時には書き換えない。上書き・削除の直前に読めない原文と旧復元記録を保全する。
+    const journal = kv.getItem(JOURNAL);
+    if (journal !== null) preserveRaw(kv, JOURNAL, journal);
+    const previous = kv.getItem(key);
+    const readable = key === KEY_RUN ? deserializeRun(previous) : deserializeMeta(previous);
+    if (previous !== null && !readable) preserveRaw(kv, key, previous);
+    if (value === null) kv.removeItem(key); else kv.setItem(key, value);
+    return true;
+  } catch { return false; }
 }
+
 export function saveRun(run: Run | null, kv: KV | null = storage()): boolean { return put(KEY_RUN, run ? serializeRun(run) : null, kv); }
 export function saveMeta(meta: Meta, kv: KV | null = storage()): boolean { return put(KEY_META, JSON.stringify(meta), kv); }
 export function loadRun(kv: KV | null = storage()): Run | null { try { return deserializeRun(kv?.getItem(KEY_RUN) ?? null); } catch { return null; } }
 export function loadMeta(kv: KV | null = storage()): Meta { try { return deserializeMeta(kv?.getItem(KEY_META) ?? null) ?? defaultMeta(); } catch { return defaultMeta(); } }
 
-export function recoveryProblem(kv: KV | null = storage()): string {
-  if (!kv) return '保存場所を利用できません。ブラウザーの設定をご確認ください。';
-  try {
-    if (kv.getItem(JOURNAL)) return '復元が完了していません。復元前のデータに戻してください。';
-    const r = kv.getItem(KEY_RUN), m = kv.getItem(KEY_META);
-    return (r !== null && !deserializeRun(r)) || (m !== null && !deserializeMeta(m)) ? '保存データを安全に読み込めませんでした。元のデータは残しています。バックアップを書き出すか、有効なバックアップから復元してください。' : '';
-  } catch { return '保存場所を読み取れませんでした。'; }
-}
-
-export interface Backup { format: 'fushigina-dungeon-modoki'; version: 1; exportedAt: string; run: Run | null; meta: Meta }
-export function exportBackup(meta: Meta, run: Run | null): string { return JSON.stringify({ format: 'fushigina-dungeon-modoki', version: 1, exportedAt: new Date().toISOString(), run, meta } satisfies Backup, null, 2); }
-export function parseBackup(text: string): Backup | null {
-  if (text.length > 10_000_000) return null;
-  try {
-    const b = JSON.parse(text);
-    if (!obj(b) || b.format !== 'fushigina-dungeon-modoki' || b.version !== 1 || typeof b.exportedAt !== 'string' || !Number.isFinite(Date.parse(b.exportedAt))) return null;
-    const meta = deserializeMeta(JSON.stringify(b.meta));
-    const run = b.run === null ? null : deserializeRun(JSON.stringify(b.run));
-    return meta && (b.run === null || run) ? { ...b, meta, run } as Backup : null;
-  } catch { return null; }
-}
-export function exportRaw(kv: KV | null = storage()): string {
-  return JSON.stringify({ format: 'fdm-recovery-raw', exportedAt: new Date().toISOString(), run: kv?.getItem(KEY_RUN), meta: kv?.getItem(KEY_META), journal: kv?.getItem(JOURNAL) }, null, 2);
-}
-function restoreValues(kv: KV, values: { run: string | null; meta: string | null }) {
-  for (const [key, value] of [[KEY_RUN, values.run], [KEY_META, values.meta]]) {
-    if (value === null) kv.removeItem(key!); else kv.setItem(key!, value!);
-  }
-}
-export function rollbackRestore(kv: KV | null = storage()): boolean {
-  if (!kv) return false;
-  try {
-    const raw = kv.getItem(JOURNAL);
-    if (!raw) return true;
-    const prev = JSON.parse(raw);
-    if (!obj(prev) || ![prev.run, prev.meta].every((x) => x === null || typeof x === 'string')) return false;
-    restoreValues(kv, prev as { run: string | null; meta: string | null });
-    kv.removeItem(JOURNAL);
-    return true;
-  } catch { return false; }
-}
-export function restoreBackup(b: Backup, kv: KV | null = storage()): boolean {
-  if (!kv || !parseBackup(JSON.stringify(b))) return false;
-  try {
-    if (kv.getItem(JOURNAL)) return false;
-    const prev = { run: kv.getItem(KEY_RUN), meta: kv.getItem(KEY_META) };
-    kv.setItem(JOURNAL, JSON.stringify(prev));
-    restoreValues(kv, { run: b.run ? serializeRun(b.run) : null, meta: JSON.stringify(b.meta) });
-    kv.removeItem(JOURNAL);
-    failures.clear(); report('restore', true);
-    return true;
-  } catch { rollbackRestore(kv); report('restore', false); return false; }
-}
-
 export function finalizeRun(meta: Meta, run: Run, kv: KV | null = storage()): { meta: Meta; summary: Summary | null; ok: boolean } {
   if (!run.end) return { meta, summary: null, ok: false };
   if (!run.completionId) run.completionId = `${run.mode}:${run.seed}:${run.turn}:${Date.now()}:${Math.random().toString(36).slice(2)}`;
-  if (!saveRun(run, kv)) return { meta, summary: null, ok: false };
-  if (meta.lastFinalized === run.completionId) return { meta, summary: null, ok: saveRun(null, kv) };
-  const next: Meta = JSON.parse(JSON.stringify(meta));
-  const summary = finishRun(next, run);
+  const alreadyApplied = meta.lastFinalized === run.completionId;
+  const next: Meta = alreadyApplied ? meta : JSON.parse(JSON.stringify(meta));
+  const summary = alreadyApplied ? null : finishRun(next, run);
   next.lastFinalized = run.completionId;
-  if (!saveMeta(next, kv)) return { meta, summary: null, ok: false };
-  // 村の保存後に冒険を消す。ここで閉じても識別子により二重反映しない。
-  const ok = saveRun(null, kv);
-  return { meta: next, summary, ok };
+  // メモリー上の結果は常に返す。永続化できた場合だけ途中データを片付ける。
+  saveRun(run, kv);
+  const metaSaved = saveMeta(next, kv);
+  const cleared = metaSaved && saveRun(null, kv);
+  return { meta: next, summary, ok: metaSaved && cleared };
 }

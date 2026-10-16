@@ -2,8 +2,7 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
 import { MODE_NAME } from './content/world';
 import { departure, todayKey, type Meta, type Settings, type Summary } from './engine/meta';
-import { exportBackup, finalizeRun, loadMeta, loadRun, parseBackup, recoveryProblem, restoreBackup, saveMeta, saveProblem } from './engine/save';
-import { BackupTools, SaveContext } from './ui/BackupTools';
+import { finalizeRun, loadMeta, loadRun, saveMeta, saveRun } from './engine/save';
 import type { Run, RunMode } from './engine/types';
 import { floorTrack, setBgmVolume, titleTrack, useBgm } from './audio/bgm';
 import { setSeVolume } from './audio/sound';
@@ -19,9 +18,6 @@ const Gallery = import.meta.env.DEV ? lazy(() => import('./ui/Gallery')) : null;
 
 export default function App() {
   const ready = useSpritesReady();
-  const [recovery] = useState(() => recoveryProblem());
-  const [saveError, setSaveError] = useState(saveProblem);
-  useEffect(() => { const update = () => setSaveError(saveProblem()); window.addEventListener('fdm-save-status', update); return () => window.removeEventListener('fdm-save-status', update); }, []);
   const [meta, setMetaState] = useState<Meta>(() => loadMeta());
   const [run, setRun] = useState<Run | null>(() => loadRun());
   const [screen, setScreen] = useState<Screen>('title');
@@ -52,8 +48,8 @@ export default function App() {
     const copy: Meta = JSON.parse(JSON.stringify(meta));
     const seed = (Date.now() ^ Math.floor(Math.random() * 0x7fffffff)) | 0;
     const next = departure(copy, mode, carry, seed, mode === 'daily' ? todayKey() : undefined);
-    const backup = parseBackup(exportBackup(copy, next));
-    if (!backup || !restoreBackup(backup)) { setSaveError('出発を保存できませんでした。持ち込み品は変更していません。再試行してください。'); return; }
+    saveMeta(copy);
+    saveRun(next);
     setMetaState(copy);
     setRun(next);
     setFloor(next.floorNo);
@@ -64,13 +60,12 @@ export default function App() {
     if (!run) return;
     const result = finalizeRun(meta, run);
     setMetaState(result.meta);
-    if (!result.ok) return;
     setSummary(result.summary);
     setRun(null);
     setScreen(result.summary ? 'result' : 'village');
   }, [run, meta, setMeta]);
 
-  useEffect(() => { if (run?.end && !recovery) end(); }, [run, recovery, end]);
+  useEffect(() => { if (run?.end) end(); }, [run, end]);
 
   const giveUp = useCallback(() => {
     if (!run) return;
@@ -78,8 +73,6 @@ export default function App() {
     end();
   }, [run, end]);
 
-  const content = () => {
-  if (recovery) return <main className="recovery-screen"><h1>保存データの確認</h1><p role="alert">{recovery}</p><BackupTools recovery /></main>;
   if (!ready) return <div className="loading">迷宮を準備しています……</div>;
   if (Gallery && location.search.includes('gallery')) return <Suspense fallback={null}><Gallery /></Suspense>;
 
@@ -101,11 +94,4 @@ export default function App() {
       onAbandon={giveUp}
     />
   );
-  };
-  return <SaveContext.Provider value={{ meta, run, restored: () => location.reload() }}>
-    {saveError && <aside className="save-warning" role="alert"><p>{saveError}</p><div className="row-buttons"><button onClick={() => {
-      if (run?.end) end(); else { const b = parseBackup(exportBackup(meta, run)); if (b) restoreBackup(b); }
-    }}>保存を再試行</button></div><BackupTools /></aside>}
-    {content()}
-  </SaveContext.Provider>;
 }

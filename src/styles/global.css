@@ -282,10 +282,3 @@ h4 { margin: 14px 0 6px; font-size: 0.9rem; }
 .hp-bar.small { height: 7px; margin: 6px 0 2px; max-width: 220px; }
 .record-grid.highlights { margin: 14px 0 4px; }
 .book-detail .hp-bar { flex: none; }
-
-/* v2.2 保存・復元 */
-.backup-tools { margin-top: 1rem; border-top: 1px solid #776c55; padding-top: .75rem; }
-.backup-tools h3 { margin: .2rem 0 .6rem; }
-.restore-review { padding: .75rem; margin-top: .8rem; background: #272438; border: 1px solid #bda36e; border-radius: 8px; }
-.save-warning { position: relative; z-index: 100; padding: .8rem; background: #4a2220; color: #fff3dd; border-bottom: 2px solid #e0a05b; max-height: 60dvh; overflow: auto; }
-.recovery-screen { max-width: 640px; margin: 2rem auto; padding: 1rem; color: #f8edd7; }

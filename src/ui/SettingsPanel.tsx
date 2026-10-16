@@ -1,5 +1,4 @@
 // 設定：音量・敵の動きの速さ・文字の大きさ
-import { BackupTools } from './BackupTools';
 import type { Settings } from '../engine/meta';
 
 export function SettingsBody({ settings, onChange }: { settings: Settings; onChange: (s: Settings) => void }) {
@@ -30,7 +29,6 @@ export function SettingsBody({ settings, onChange }: { settings: Settings; onCha
           ))}
         </div>
       </div>
-      <BackupTools />
     </div>
   );
 }
